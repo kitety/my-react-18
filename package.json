@@ -1,0 +1,16 @@
+{
+  "name": "my-react-18",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite --force"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vitejs/plugin-react": "^3.0.1",
+    "vite": "^4.0.4"
+  }
+}
