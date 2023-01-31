@@ -1,3 +1,4 @@
+import { createRoot } from "react-dom/client";
 let element = (
   <h1>
     hello
@@ -5,3 +6,7 @@ let element = (
   </h1>
 );
 console.log("element: ", element);
+// debugger;
+const root = createRoot(document.getElementById("root"));
+console.log("root: ", root);
+root.render(element);
