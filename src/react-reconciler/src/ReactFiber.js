@@ -52,3 +52,38 @@ export function createFiber(tag, pendingProps, key) {
 export function createHostRootFiber() {
   return createFiber(HostRoot, null, null)
 }
+
+/**
+ * 基于老的fiber和新的属性创建新的fiber
+ * @param {*} current 老fiber
+ * @param {*} pendingProps 新属性
+ */
+export function createWorkInProgress(current, pendingProps) {
+  // 拿到老的轮替 开始为null
+  let workInProgress = current.alternate
+  // 没有的话创建新的
+  if (workInProgress === null) {
+    workInProgress = createFiber(current.tag, pendingProps, current.key)
+    // 类型
+    workInProgress.type = current.type
+    // 静态dom节点
+    workInProgress.stateNode = current.stateNode
+    // 替身
+    workInProgress.alternate = current
+    current.alternate = workInProgress
+  } else {
+    // 有的话，更新
+    workInProgress.pendingProps = pendingProps
+    workInProgress.type = current.type
+    workInProgress.flags = NoFlags
+    workInProgress.subtreeFlags = NoFlags
+  }
+  // 属性拷贝
+  workInProgress.child = current.child
+  workInProgress.memoizedProps = current.memoizedProps
+  workInProgress.memoizedState = current.memoizedState
+  workInProgress.updateQueue = current.updateQueue
+  workInProgress.sibling = current.sibling
+  workInProgress.index = current.index
+  return workInProgress
+}

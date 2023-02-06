@@ -8,6 +8,6 @@ let element = (
 console.log("element: ", element);
 // debugger;
 const root = createRoot(document.getElementById("root"));
-console.log("root: ", root);
+// console.log("root: ", root);
 // element元素的虚拟dom渲染到容器中
 root.render(element);
