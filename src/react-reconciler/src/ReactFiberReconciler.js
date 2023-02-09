@@ -10,7 +10,7 @@ export function createContainer(containerInfo) {
  * @param {*} container dom容器 FiberRootNode
  */
 export function updateContainer(element, container) {
-  // 获取当前的根fiber FiberNode
+  // 获取当前的根fiber 比如RootFiber
   const current = container.current
   // 创建更新
   const update = createUpdate();
@@ -20,8 +20,8 @@ export function updateContainer(element, container) {
   }
   // 把更新添加到根fiber的更新队列上,返回根节点
   const root = enqueueUpdate(current, update);
-  // console.log('root: ', root);
-  // 在fiber上调度更新
-  scheduleUpdateOnFiber(current)
+  // console.log('scheduleUpdateOnFiber root: ', root);
+  // 在fiber树上上调度更新
+  scheduleUpdateOnFiber(root)
 
 }

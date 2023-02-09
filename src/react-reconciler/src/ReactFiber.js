@@ -85,5 +85,6 @@ export function createWorkInProgress(current, pendingProps) {
   workInProgress.updateQueue = current.updateQueue
   workInProgress.sibling = current.sibling
   workInProgress.index = current.index
+  // 返回alternate的fiber
   return workInProgress
 }

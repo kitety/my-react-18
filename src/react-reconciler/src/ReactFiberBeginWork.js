@@ -1,11 +1,13 @@
 import logger from "shared/logger";
+import { processUpdateQueue } from "./ReactFiberClassUpdateQueue";
 import { HostComponent, HostRoot, HostText } from "./ReactWorkTags";
 
 // 根节点
 function updateHostRoot(current, workInProgress) {
   // 需要知道他的子虚拟dom，知道他的儿子的虚拟dom信息
-  processUpdateQueue(workInProgress)// 给workInProgress.memoriedState={element}赋值
-  const nextState = workInProgress.memoriedState
+  // 处理更新队列
+  processUpdateQueue(workInProgress)// 给workInProgress.memoriedState={element}赋值，从更新队列里面拿出来
+  const nextState = workInProgress.memoizedState
   // 虚拟dom
   const nextChildren = nextState.element
   // 协调子节点 dom-diff算法
@@ -27,6 +29,7 @@ export function beginWork(current, workInProgress) {
   switch (workInProgress.tag) {
     // 根节点
     case HostRoot:
+      // 更新子fiber树
       return updateHostRoot(current, workInProgress)
     case HostComponent:
       return updateHostComponent(current, workInProgress)

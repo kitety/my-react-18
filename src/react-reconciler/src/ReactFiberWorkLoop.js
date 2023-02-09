@@ -15,6 +15,7 @@ export function scheduleUpdateOnFiber(root) {
   // 确保调度执行root上的更新
   ensureRootIsSchedule(root)
 }
+// 保证调度root的更新
 function ensureRootIsSchedule(root) {
   // 执行root上的并发更新工作
   // 告诉浏览器执行performConcurrentWorkOnRoot函数，参数为root
@@ -32,7 +33,7 @@ function performConcurrentWorkOnRoot(root) {
 function prepareFreshStack(root) {
   // 根据老的fiber创建新的fiber
   // 注意这这里返回的是新的
-  workInProgress = createWorkInProgress(root, null)
+  workInProgress = createWorkInProgress(root.current, null)
   console.log('workInProgress: ', workInProgress);
 }
 
@@ -53,7 +54,7 @@ function performUnitOfWork(unitOfWork) {
   //获取新fiber对应的老fiber
   const current = unitOfWork.alternate
   // 完成当前fiber的子fiber链表构建后
-  // 老fiber->新fiber
+  // current老fiber->unitOfWork新fiber
   const next = beginWork(current, unitOfWork)
   // 属性拷贝，把等待生效的变为已经生效的
   unitOfWork.memorizedProps = unitOfWork.pendingProps

@@ -11,7 +11,7 @@ for (const tag in ReactWorkTags) {
 export default function logger(prefix, workInProgress) {
   let tagValue = workInProgress.tag
   let tagName = ReactWorkTagMap.get(tagValue)
-  let str = `logger==${prefix}: ${tagName} `
+  let str = `LOGGER==>${prefix}: ${tagName} `
   if (tagName === 'HostComponent') {
     // 原生节点
     str += ` ${workInProgress.type} `
