@@ -29,6 +29,7 @@ export function enqueueUpdate(fiber, update) {
   // pending指向最后一个更新，next 第一个
   const pending = updateQueue.shared.pending;
   if (pending === null) {
+    // 指向自己，形成环
     update.next = update
   } else {
     // 指向第一个
@@ -74,7 +75,6 @@ export function processUpdateQueue(workInProgress) {
     // 把最终计算到的状态给memoizedState
     workInProgress.memoizedState = newState
     console.log('newState: ', newState);// payload
-
   }
 
 }
@@ -90,7 +90,6 @@ function getStateFromUpdate(update, previousState) {
     case UpdateState:
       const { payload } = update
       // 合并的不是vdom，合并的是{element:vdom}
-
       return assign({}, previousState, payload)
     default:
       break;
