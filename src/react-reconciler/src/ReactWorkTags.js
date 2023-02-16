@@ -1,5 +1,6 @@
 // 根fiber的类型
 // 每种虚拟dom都有对应自己的fiber tag类型
+// 组件有class组件和函数组件，统称为IndeterminateComponent
 export const FunctionComponent = 0;
 export const ClassComponent = 1;
 export const IndeterminateComponent = 2; // Before we know whether it is function or class

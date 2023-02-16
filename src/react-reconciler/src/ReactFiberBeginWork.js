@@ -29,7 +29,7 @@ function updateHostRoot(current, workInProgress) {
   const nextState = workInProgress.memoizedState
   // 虚拟dom {element: {…}}
   // 新的子虚拟dom
-  const nextChildren = nextState.element
+  const nextChildren = nextState.element // h1
   // 协调子节点 dom-diff算法
   //根据新的虚拟dom，生成子fiber链表
   reconcileChildren(current, workInProgress, nextChildren)
@@ -37,7 +37,9 @@ function updateHostRoot(current, workInProgress) {
 
 }
 // 原生节点
-function updateHostComponent(current, workInProgress) { }
+function updateHostComponent(current, workInProgress) {
+  return null
+}
 /**
  * 目标是根据虚拟dom，构建新的fiber子链表 child sibling
  * @param {*} current 老fiber

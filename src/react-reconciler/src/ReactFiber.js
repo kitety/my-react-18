@@ -1,6 +1,6 @@
 
 import { NoFlags } from './ReactFiberFlags'
-import { HostRoot } from './ReactWorkTags'
+import { HostComponent, HostRoot, IndeterminateComponent } from './ReactWorkTags'
 
 /**
  *
@@ -87,4 +87,30 @@ export function createWorkInProgress(current, pendingProps) {
   workInProgress.index = current.index
   // 返回alternate的fiber
   return workInProgress
+}
+/**
+ * 根据虚拟dom创建fiber节点
+ * @param {*} element 虚拟dom
+ */
+export function createFiberFromElement(element) {
+  const { type, key, pendingProps } = element
+  return createFiberFromTypeAndProps(type, key, pendingProps)
+
+}
+/**
+ * 根据类型和属性创建fiber
+ * @param {*} type
+ * @param {*} key
+ * @param {*} pendingProps
+ */
+function createFiberFromTypeAndProps(type, key, pendingProps) {
+  // tag 标签 默认为未决定的
+  let tag = IndeterminateComponent
+  // 原生组件 div span ,Fiber为原生组件
+  if (typeof type === 'string') {
+    tag = HostComponent
+  }
+  const fiber = createFiber(tag, pendingProps, key)
+  fiber.type = type
+  return fiber
 }
