@@ -1,6 +1,6 @@
 
 import { NoFlags } from './ReactFiberFlags'
-import { HostComponent, HostRoot, IndeterminateComponent } from './ReactWorkTags'
+import { HostComponent, HostRoot, HostText, IndeterminateComponent } from './ReactWorkTags'
 
 /**
  *
@@ -37,6 +37,8 @@ function FiberNode(tag, pendingProps, key) {
   this.subtreeFlags = NoFlags
   // 替身，轮替 双缓冲
   this.alternate = null
+  // 索引 默认0
+  this.index = 0
 }
 // We use a double buffering pooling technique because we know that we'll
 // only ever need at most two versions of a tree. We pool the "other" unused
@@ -93,9 +95,9 @@ export function createWorkInProgress(current, pendingProps) {
  * @param {*} element 虚拟dom
  */
 export function createFiberFromElement(element) {
-  const { type, key, pendingProps } = element
+  // debugger
+  const { type, key, props: pendingProps } = element
   return createFiberFromTypeAndProps(type, key, pendingProps)
-
 }
 /**
  * 根据类型和属性创建fiber
@@ -113,4 +115,14 @@ function createFiberFromTypeAndProps(type, key, pendingProps) {
   const fiber = createFiber(tag, pendingProps, key)
   fiber.type = type
   return fiber
+}
+
+/**
+ * 根据文本创建fiber节点
+ * @param {*} content 文本
+ */
+export function createFiberFromText(content) {
+  const fiber = createFiber(HostText, content, null)
+  return fiber
+
 }

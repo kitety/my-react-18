@@ -49,6 +49,10 @@ function workLoopSync() {
     performUnitOfWork(workInProgress)
   }
 }
+/**
+ * 执行工作单元
+ * @param {*} unitOfWork
+ */
 function performUnitOfWork(unitOfWork) {
   console.log('unitOfWork: ', unitOfWork);
   //获取新fiber对应的老fiber

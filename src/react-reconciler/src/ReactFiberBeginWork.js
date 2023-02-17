@@ -1,4 +1,5 @@
 import logger from "shared/logger";
+import { shouldSetTextContent } from "react-dom-bindings/src/ReactDOMHostConfig";
 import { mountChildFibers, reconcileChildFibers } from "./ReactChildFiber";
 import { processUpdateQueue } from "./ReactFiberClassUpdateQueue";
 import { HostComponent, HostRoot, HostText } from "./ReactWorkTags";
@@ -10,6 +11,8 @@ import { HostComponent, HostRoot, HostText } from "./ReactWorkTags";
  */
 function reconcileChildren(current, workInProgress, nextChildren) {
   // 如果此新fiber没有老的fiber，那新fiber就是新创建的（不是更新的，是创建的）
+  // 比如开始渲染的时候的子节点
+  // 如果这个父亲fiber是新创建的，那么他的子节点也是新创建的
   if (current === null) {
     // 挂在子fiber链表
     workInProgress.child = mountChildFibers(workInProgress, null, nextChildren)
@@ -37,7 +40,27 @@ function updateHostRoot(current, workInProgress) {
 
 }
 // 原生节点
+/**
+ * 构建原生节点的子fiber链表
+ * @param {*} current 老fiber
+ * @param {*} workInProgress 新fiber h1
+ * @returns
+ */
 function updateHostComponent(current, workInProgress) {
+  const { type } = workInProgress
+  const nextProps = workInProgress.pendingProps
+  // 拿到儿子
+  let nextChildren = nextProps.children
+  // 单文本优化 是不是直接文本节点
+  // 判断当前虚拟dom的儿子是不是文本的独生子
+  const isDirectTextChild = shouldSetTextContent(type, nextProps)
+  if (isDirectTextChild) {
+    nextChildren = null
+  }
+  // 协调子节点 dom-diff算法
+  //根据新的虚拟dom，生成子fiber链表
+  reconcileChildren(current, workInProgress, nextChildren)
+  return workInProgress.child// {type：'h1',tag:5} 根据element创建一个fiber，赋值给child
   return null
 }
 /**
