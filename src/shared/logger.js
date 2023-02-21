@@ -11,7 +11,7 @@ for (const tag in ReactWorkTags) {
 export default function logger(prefix, workInProgress) {
   let tagValue = workInProgress.tag
   let tagName = ReactWorkTagMap.get(tagValue)
-  let str = `LOGGER==>${prefix}: ${tagName} `
+  let str = `${prefix}: ${tagName} `
   if (tagName === 'HostComponent') {
     // 原生节点
     str += ` ${workInProgress.type} `
@@ -21,3 +21,6 @@ export default function logger(prefix, workInProgress) {
   }
   console.log(str);
 }
+
+let indent = { number: 0 }
+export { indent }

@@ -2,6 +2,7 @@
 import { scheduleCallback } from 'scheduler'
 import { createWorkInProgress } from './ReactFiber'
 import { beginWork } from './ReactFiberBeginWork'
+import { completeWork } from './ReactFiberCompleteWork'
 // 正在进行的工作
 let workInProgress = null
 
@@ -34,7 +35,7 @@ function prepareFreshStack(root) {
   // 根据老的fiber创建新的fiber
   // 注意这这里返回的是新的
   workInProgress = createWorkInProgress(root.current, null)
-  console.log('workInProgress: ', workInProgress);
+  // console.log('workInProgress: ', workInProgress);
 }
 
 function renderRootSync(root) {
@@ -54,7 +55,7 @@ function workLoopSync() {
  * @param {*} unitOfWork
  */
 function performUnitOfWork(unitOfWork) {
-  console.log('unitOfWork: ', unitOfWork);
+  // console.log('unitOfWork: ', unitOfWork);
   //获取新fiber对应的老fiber
   const current = unitOfWork.alternate
   // 完成当前fiber的子fiber链表构建后
@@ -63,12 +64,36 @@ function performUnitOfWork(unitOfWork) {
   // 属性拷贝，把等待生效的变为已经生效的
   unitOfWork.memorizedProps = unitOfWork.pendingProps
   if (next === null) {
-    workInProgress = null
+    // workInProgress = null
     // 意味着没有子节点，当前fiber结束，已经完成了，完成工作单元
-    // completeUnitOfWork(unitOfWork)
+    // console.log('unitOfWork null: ', unitOfWork);
+    completeUnitOfWork(unitOfWork)
   } else {
     // 有子节点，让子节点成为下一个工作单元
     workInProgress = next
   }
 
+}
+
+function completeUnitOfWork(unitOfWork) {
+  let completedWork = unitOfWork
+  // hello完成
+  do {
+    // 老的
+    const current = completedWork.alternate
+    const returnFiber = completedWork.return
+    // 执行此fiber的完成工作。原生组件--创建真实dom节点
+    completeWork(current, completedWork)
+    const siblingFiber = completedWork.sibling
+    // 有弟弟 构建弟弟的fiber子链表
+    if (siblingFiber !== null) {
+      workInProgress = siblingFiber
+      return
+    }
+    // 没有弟弟 说明这就是最后节点，当前完成的就是父fiber的最后节点
+    // 也就是说一个父fiber的所有子fiber全部完成
+    // 父fiber也该完成了
+    completedWork = returnFiber
+    workInProgress = completedWork
+  } while (completedWork !== null)
 }

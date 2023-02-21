@@ -1,4 +1,4 @@
-import logger from "shared/logger";
+import logger, { indent } from "shared/logger";
 import { shouldSetTextContent } from "react-dom-bindings/src/ReactDOMHostConfig";
 import { mountChildFibers, reconcileChildFibers } from "./ReactChildFiber";
 import { processUpdateQueue } from "./ReactFiberClassUpdateQueue";
@@ -70,8 +70,10 @@ function updateHostComponent(current, workInProgress) {
  * @returns
  */
 export function beginWork(current, workInProgress) {
-  logger('beginWork', workInProgress)
-  console.log('workInProgress: ', workInProgress);
+  logger(' '.repeat(indent.number) + 'beginWork', workInProgress)
+  indent.number += 2
+
+  // console.log('workInProgress: ', workInProgress);
   switch (workInProgress.tag) {
     // 根节点
     case HostRoot:

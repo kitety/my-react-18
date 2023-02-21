@@ -84,9 +84,10 @@ function createChildReconciler(
     // 上一个新fiber
     let previousNewFiber = null
     let newIndex = 0
-    for (; newIndex < newChild.length; newChild++) {
+    for (; newIndex < newChild.length; newIndex++) {
       // 创建儿子的fiber
       const newFiber = createChild(returnFiber, newChild[newIndex])
+
       if (newFiber === null) {
         continue
       }
@@ -130,6 +131,7 @@ function createChildReconciler(
     //  newChild [hello text,span 虚拟dom]
     // 是个数组
     if (isArray(newChild)) {
+
       return reconcileChildrenArray(returnFiber, currentFirstFiber, newChild)
     }
     return null

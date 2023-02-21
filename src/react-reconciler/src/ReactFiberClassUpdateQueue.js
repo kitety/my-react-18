@@ -74,7 +74,7 @@ export function processUpdateQueue(workInProgress) {
     }
     // 把最终计算到的状态给memoizedState
     workInProgress.memoizedState = newState
-    console.log('newState: ', newState);// payload
+    // console.log('newState: ', newState);// payload
   }
 
 }
