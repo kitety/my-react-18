@@ -43,3 +43,12 @@ export function finalizeInitialChildren(domElement, type, props) {
 export function appendInitialChild(parent, child) {
   parent.appendChild(child)
 }
+
+/**
+ *
+ * @param {*} parent 父亲
+ * @param {*} child 儿子
+ */
+export function appendChild(parentInstance, child) {
+  parentInstance.appendChild(child)
+}

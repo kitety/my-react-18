@@ -94,16 +94,16 @@ export function completeWork(current, workInProgress) {
 // 冒泡 合并副作用
 function bubbleProperties(completedWork) {
   // 儿子们的
-  let subTreeFlags = NoFlags
+  let subtreeFlags = NoFlags
   let child = completedWork.child
   // 有儿子
   // 遍历当前fiber的所有子节点，把所有的子节点的的副作用，以及子节点的子节点的副作用，全部合并起来
   while (child !== null) {
     // 处理flags
-    subTreeFlags |= child.subTreeFlags
-    subTreeFlags |= child.flags
+    subtreeFlags |= child.subtreeFlags
+    subtreeFlags |= child.flags
     child = child.sibling
   }
-  completedWork.subTreeFlags = subTreeFlags
+  completedWork.subtreeFlags = subtreeFlags
 
 }
