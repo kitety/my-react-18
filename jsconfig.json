@@ -9,7 +9,7 @@
                 "src/react-dom/*"
             ],
             "react-dom-bindings/*": [
-                "react-dom-bindings/*"
+                "src/react-dom-bindings/*"
             ],
             "react-reconciler/*": [
                 "src/react-reconciler/*"

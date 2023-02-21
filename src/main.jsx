@@ -1,15 +1,9 @@
 import { createRoot } from "react-dom/client";
 let element = (
-  <div>
-    <h1>
-      hello
-      <span style={{ color: "red" }}>world</span>
-    </h1>
-    <h2>
-      good
-      <span style={{ color: "red" }}>job</span>
-    </h2>
-  </div>
+  <h1 id='contain'>
+    hello
+    <span style={{ color: "red" }}>world</span>
+  </h1>
 );
 console.log("element: ", element);
 // debugger;
