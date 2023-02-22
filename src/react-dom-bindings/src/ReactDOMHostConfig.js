@@ -52,3 +52,13 @@ export function appendInitialChild(parent, child) {
 export function appendChild(parentInstance, child) {
   parentInstance.appendChild(child)
 }
+
+/**
+ * 在parent的before之前插入child,在某个节点的前面插入一个节点，找到一个锚点
+ * @param {*} parent
+ * @param {*} child
+ * @param {*} beforeChild
+ */
+export function insertBefore(parent, child, beforeChild) {
+  parent.insertBefore(child, beforeChild)
+}
