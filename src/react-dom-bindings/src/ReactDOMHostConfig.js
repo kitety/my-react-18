@@ -18,7 +18,6 @@ export function createTextInstance(content) {
 }
 
 export function createInstance(type, props, workInProgress) {
-  console.log('type, props, workInProgress: ', type, props, workInProgress);
   const domElement = document.createElement(type)
   // 属性的添加一会写
 

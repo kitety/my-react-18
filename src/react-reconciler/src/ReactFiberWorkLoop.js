@@ -4,7 +4,8 @@ import { createWorkInProgress } from './ReactFiber'
 import { beginWork } from './ReactFiberBeginWork'
 import { commitMutationEffectsOnFiber } from './ReactFiberCommitWork'
 import { completeWork } from './ReactFiberCompleteWork'
-import { MutationMask, NoFlags } from './ReactFiberFlags'
+import { MutationMask, NoFlags, Placement, Update } from './ReactFiberFlags'
+import { HostComponent, HostRoot, HostText } from './ReactWorkTags'
 // 正在进行的工作
 let workInProgress = null
 
@@ -40,7 +41,7 @@ function performConcurrentWorkOnRoot(root) {
   commitRoot(root)
 }
 function commitRoot(root) {
-  console.log('commitRoot root: ', root);
+  printFinishedWork(root.finishedWork)
   // 拿到完成的工作
   const { finishedWork } = root
   // 更新 插入 有flags
@@ -56,9 +57,6 @@ function commitRoot(root) {
   // dom变更后，root current 指向新的fiber树
 
   root.current = finishedWork
-
-
-
 }
 function prepareFreshStack(root) {
   // 根据老的fiber创建新的fiber
@@ -91,7 +89,7 @@ function performUnitOfWork(unitOfWork) {
   // current老fiber->unitOfWork新fiber
   const next = beginWork(current, unitOfWork)
   // 属性拷贝，把等待生效的变为已经生效的
-  unitOfWork.memorizedProps = unitOfWork.pendingProps
+  unitOfWork.memoizedProps = unitOfWork.pendingProps
   if (next === null) {
     // workInProgress = null
     // 意味着没有子节点，当前fiber结束，已经完成了，完成工作单元
@@ -125,4 +123,37 @@ function completeUnitOfWork(unitOfWork) {
     completedWork = returnFiber
     workInProgress = completedWork
   } while (completedWork !== null)
+}
+
+function printFinishedWork(fiber) {
+  let child = fiber.child
+  while (child !== null) {
+    printFinishedWork(child)
+    child = child.sibling
+  }
+  if (fiber.flags !== NoFlags) {
+    console.log(getFlags(fiber.flags), getTag(fiber.tag), fiber.type, fiber.memoizedProps)
+  }
+}
+function getFlags(flags) {
+  if (flags === Placement) {
+    return '插入'
+  }
+  if (flags === Update) {
+    return '更新'
+  }
+  return flags
+}
+
+function getTag(tag) {
+  switch (tag) {
+    case HostRoot:
+      return 'HostRoot'
+    case HostComponent:
+      return 'HostComponent'
+    case HostText:
+      return 'HostText'
+    default:
+      break
+  }
 }

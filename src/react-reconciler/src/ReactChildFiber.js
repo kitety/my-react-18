@@ -12,6 +12,8 @@ import { Placement } from "./ReactFiberFlags";
 function createChildReconciler(
   shouldTrackSideEffects,
 ) {
+  //  test 减少操作
+  // shouldTrackSideEffects = true
   // 协调单个的子节点
   function reconcileSingleElement(returnFiber, currentFirstFiber, element) {
     // 因为我们现在实现的初次挂载，老节点的currentFirstFiber是null，所以可以直接根据虚拟dom创建新的fiber节点

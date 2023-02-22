@@ -1,6 +1,6 @@
 import { appendChild, insertBefore } from "react-dom-bindings/src/ReactDOMHostConfig";
 import { MutationMask, Placement } from "./ReactFiberFlags";
-import { HostComponent, HostRoot, HostText } from "./ReactWorkTags";
+import { FunctionComponent, HostComponent, HostRoot, HostText } from "./ReactWorkTags";
 
 function recursivelyTraverseMutationEffects(root, parentFiber) {
   if (parentFiber.subtreeFlags & MutationMask) {
@@ -63,17 +63,18 @@ function insertOrAppendPlacementNode(node, before, parent) {
     } else {
       // 没有就在最后
       appendChild(parent, stateNode)
+
     }
   } else {
     // 不是原生 文本
     const { child } = node
     if (child !== null) {
       // 添加大儿子
-      insertOrAppendPlacementNode(child, parent)
+      insertOrAppendPlacementNode(child, before, parent)
       let { sibling } = child
       while (sibling !== null) {
         // 添加兄弟
-        insertOrAppendPlacementNode(sibling, parent)
+        insertOrAppendPlacementNode(sibling, before, parent)
         // 兄弟的兄弟
         sibling = sibling.sibling
       }
@@ -133,7 +134,6 @@ function commitPlacement(finishedWork) {
       // 获取兄弟，插在兄弟之前
       // 找到最近的弟弟
       const before = getHostSibling(finishedWork)
-      console.log('before: ', before);
       insertOrAppendPlacementNode(finishedWork, before, parent)
       break;
 
@@ -141,8 +141,10 @@ function commitPlacement(finishedWork) {
     case HostComponent: {
       // 获取兄弟，插在兄弟之前
       // 找到最近的弟弟
+      const parent = parentFiber.stateNode
+
       const before = getHostSibling(finishedWork)
-      console.log('before: ', before);
+
       insertOrAppendPlacementNode(finishedWork, before, parent)
       break
 
@@ -161,6 +163,7 @@ function commitPlacement(finishedWork) {
  */
 export function commitMutationEffectsOnFiber(finishedWork, root) {
   switch (finishedWork.tag) {
+    case FunctionComponent:
     case HostRoot:
     case HostComponent:
     case HostText: {

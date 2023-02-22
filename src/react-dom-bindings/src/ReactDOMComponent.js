@@ -6,7 +6,6 @@ const STYLE = 'style'
 const CHILDREN = 'children'
 
 function setInitialDOMProperties(tag, domElement, props) {
-  console.log('tag, domElement, props: ', tag, domElement, props);
   for (const propKey in props) {
     if (Object.hasOwnProperty.call(props, propKey)) {
       const nextProp = props[propKey];

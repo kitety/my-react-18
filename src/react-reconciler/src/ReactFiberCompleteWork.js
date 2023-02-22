@@ -63,7 +63,6 @@ export function completeWork(current, workInProgress) {
       break
     // 文本
     case HostText:
-      console.log('newProps: ', newProps);
       // 如果完成的fiber是文本节点，那就创建真实的文本节点
       // 传给fiber的stateNode
       workInProgress.stateNode = createTextInstance(newProps)
@@ -73,12 +72,12 @@ export function completeWork(current, workInProgress) {
     case HostComponent:
       // 原生节点
       // 完成的是原生节点
-      console.log('newProps: ', newProps);
       // 创建真实dom节点
       const { type } = workInProgress
       const instance = createInstance(type, newProps, workInProgress)
       // 初次挂载的新节点，目前只是处理创建的逻辑，后面此处会进行区分，初次挂载还是更新
       // 把自己所有的儿子都添加到自己的身上
+      // *** h1 添加 hello span
       appendAllChildren(instance, workInProgress)
       workInProgress.stateNode = instance
       finalizeInitialChildren(instance, type, newProps)
