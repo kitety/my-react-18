@@ -6,10 +6,29 @@ import { createRoot } from "react-dom/client";
 //   </h1>
 // );
 function FunctionComponent() {
+  // hooks 就需要更新，就需要事件触发
   return (
-    <h1 id='contain'>
+    <h1
+      id='container'
+      onClick={() => {
+        console.log("父click冒泡");
+      }}
+      onClickCapture={() => {
+        console.log("父click捕获");
+      }}
+    >
       hello
-      <span style={{ color: "red" }}>world</span>
+      <span
+        style={{ color: "red" }}
+        onClick={() => {
+          console.log("儿子click冒泡");
+        }}
+        onClickCapture={() => {
+          console.log("儿子click捕获");
+        }}
+      >
+        world 点击我
+      </span>
     </h1>
   );
 }

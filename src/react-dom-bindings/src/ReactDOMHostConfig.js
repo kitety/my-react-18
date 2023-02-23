@@ -1,3 +1,4 @@
+import { preCacheFiberNode, updateFiberProps } from "./client/ReactDomComponentTree";
 import { setInitialProperties } from "./ReactDOMComponent";
 
 // dom 操作
@@ -17,10 +18,12 @@ export function createTextInstance(content) {
   return document.createTextNode(content);
 }
 
-export function createInstance(type, props, workInProgress) {
+export function createInstance(type, props, internalInstanceHandle) {
   const domElement = document.createElement(type)
   // 属性的添加一会写
-
+  preCacheFiberNode(internalInstanceHandle, domElement)
+  // 把属性直接保存在dom上
+  updateFiberProps(domElement, props)
   return domElement
 }
 

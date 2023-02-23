@@ -132,7 +132,7 @@ function printFinishedWork(fiber) {
     child = child.sibling
   }
   if (fiber.flags !== NoFlags) {
-    console.log(getFlags(fiber.flags), getTag(fiber.tag), fiber.type, fiber.memoizedProps)
+    // console.log(getFlags(fiber.flags), getTag(fiber.tag), fiber.type, fiber.memoizedProps)
   }
 }
 function getFlags(flags) {

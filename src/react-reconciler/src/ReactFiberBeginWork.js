@@ -71,14 +71,14 @@ function updateHostComponent(current, workInProgress) {
  * @param {*} type 组件 函数组件的定义
  */
 export function mountIndeterminateComponent(current, workInProgress, Component) {
-  console.log('current, workInProgress, type: ', current, workInProgress, Component);
+  // console.log('current, workInProgress, type: ', current, workInProgress, Component);
   // 函数组件渲染的是返回值
   const props = workInProgress.pendingProps
   // 返回的是个虚拟dom
   // const value = Component(props)
   // hooks的写法
   const value = renderWithHooks(current, workInProgress, Component, props)
-  console.log('value: ', value);
+  // console.log('value: ', value);
   // 改问函数组件
   workInProgress.tag = FunctionComponent
   reconcileChildren(current, workInProgress, value)
