@@ -19,7 +19,7 @@ export default function logger(prefix, workInProgress) {
     // 文本
     str += ` ${workInProgress.pendingProps} `
   }
-  console.log(str);
+  // console.log(str);
 }
 
 let indent = { number: 0 }

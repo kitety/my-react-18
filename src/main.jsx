@@ -13,14 +13,17 @@ function FunctionComponent() {
       onClick={() => {
         console.log("父click冒泡");
       }}
-      onClickCapture={() => {
+      onClickCapture={(e) => {
+        console.log("e: ", e);
         console.log("父click捕获");
       }}
     >
       hello
       <span
         style={{ color: "red" }}
-        onClick={() => {
+        onClick={(e) => {
+          console.log("e: ", e);
+          e.stopPropagation();
           console.log("儿子click冒泡");
         }}
         onClickCapture={() => {

@@ -33,6 +33,6 @@ export function dispatchEvent(domEventName, eventSystemFlags, container, nativeE
   const nativeEventTarget = getEventTarget(nativeEvent)
   // 从这个节点找到最近的fiber节点
   const targetInst = getClosestInstanceFromNode(nativeEventTarget)
-  // 为了插件系统派发时间
+  // 为了插件系统派发事件
   dispatchEventForPluginEventSystem(domEventName, eventSystemFlags, nativeEvent, targetInst, container)
 }

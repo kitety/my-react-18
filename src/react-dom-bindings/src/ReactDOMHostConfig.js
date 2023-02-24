@@ -17,10 +17,17 @@ export function shouldSetTextContent(type, props) {
 export function createTextInstance(content) {
   return document.createTextNode(content);
 }
-
+/**
+ * 原生组件初次挂载的时候，同伙这个方法创建dom元素
+ * @param {*} type 类型 span
+ * @param {*} props 属性
+ * @param {*} internalInstanceHandle 对应的fiber
+ * @returns
+ */
 export function createInstance(type, props, internalInstanceHandle) {
   const domElement = document.createElement(type)
   // 属性的添加一会写
+  // 预先缓存fiber节点到dom元素上
   preCacheFiberNode(internalInstanceHandle, domElement)
   // 把属性直接保存在dom上
   updateFiberProps(domElement, props)
