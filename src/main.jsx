@@ -23,7 +23,7 @@ function FunctionComponent() {
   return (
     <button
       onClick={() => {
-        // 双向循环链表
+        // 组成双向循环链表
         setNumber({ type: "increment" }); // update1=>u2=>u3=>u1
         setNumber({ type: "increment" }); // update2
         setNumber({ type: "increment" }); // update3

@@ -2,12 +2,14 @@
 import { scheduleCallback } from 'scheduler'
 import { createWorkInProgress } from './ReactFiber'
 import { beginWork } from './ReactFiberBeginWork'
+import { finishQueuingConcurrentUpdates } from './ReactFiberConcurrentUpdates'
 import { commitMutationEffectsOnFiber } from './ReactFiberCommitWork'
 import { completeWork } from './ReactFiberCompleteWork'
 import { MutationMask, NoFlags, Placement, Update } from './ReactFiberFlags'
 import { HostComponent, HostRoot, HostText } from './ReactWorkTags'
 // 正在进行的工作
 let workInProgress = null
+let workInProgressRoot = null
 
 /**
  * 计划更新root
@@ -20,7 +22,12 @@ export function scheduleUpdateOnFiber(root) {
   ensureRootIsSchedule(root)
 }
 // 保证调度root的更新
+// 宏任务，不会立刻执行
 function ensureRootIsSchedule(root) {
+  if (workInProgressRoot) {
+    return
+  }
+  workInProgressRoot = root
   // 执行root上的并发更新工作
   // 告诉浏览器执行performConcurrentWorkOnRoot函数，参数为root
   scheduleCallback(performConcurrentWorkOnRoot.bind(null, root))
@@ -39,6 +46,7 @@ function performConcurrentWorkOnRoot(root) {
   const finishedWork = root.current.alternate
   root.finishedWork = finishedWork
   commitRoot(root)
+  workInProgressRoot = null
 }
 function commitRoot(root) {
   printFinishedWork(root.finishedWork)
@@ -63,6 +71,8 @@ function prepareFreshStack(root) {
   // 注意这这里返回的是新的
   workInProgress = createWorkInProgress(root.current, null)
   // console.log('workInProgress: ', workInProgress);
+  // 完成并发队列更新 完成收集
+  finishQueuingConcurrentUpdates()
 }
 
 function renderRootSync(root) {

@@ -1,4 +1,6 @@
 import ReactSharedInternals from "shared/ReactSharedInternals"
+import { enqueueConcurrentHookUpdate } from "./ReactFiberConcurrentUpdates"
+import { scheduleUpdateOnFiber } from "./ReactFiberWorkLoop"
 
 const { ReactCurrentDispatcher } = ReactSharedInternals
 const HooksDispatcherOnMount = {
@@ -14,11 +16,12 @@ function mountReducer(reducer, initialArgs) {
   const hook = mountWorkInProcessHook()
   hook.memoizedState = initialArgs
   const queue = {
-    pending: null
+    pending: null,
+    dispatch: null,
   }
   // 队列
   hook.queue = queue
-  const dispatch = dispatchReducerAction.bind(null, currentRenderingFiber, queue)
+  const dispatch = (queue.dispatch = dispatchReducerAction.bind(null, currentRenderingFiber, queue))
   return [hook.memoizedState, dispatch]
 }
 /**
@@ -29,7 +32,17 @@ function mountReducer(reducer, initialArgs) {
  */
 function dispatchReducerAction(fiber, queue, action) {
   console.log('fiber, queue, action: ', fiber, queue, action);
-
+  // 在每个hook里面会放一个哦更新队列，更新队列是一个更新对象的循环链表 update.next=u2 u2.next=u1
+  // 更新逻辑
+  const update = {
+    action,// { type: "increment" }
+    next: null
+  }
+  // 调度的根
+  // 入队并发hook更新
+  // 把当前最新的更新添加到更新队列里面，并且返回当前的根fiber
+  const root = enqueueConcurrentHookUpdate(fiber, queue, update)
+  scheduleUpdateOnFiber(root)
 }
 
 /**
@@ -53,6 +66,8 @@ function mountWorkInProcessHook() {
     // 不是第一个 单项链表
     workInProgressHook.next = hook // 上一个的next指向当前的hook
     workInProgressHook = hook // 当前的hook变成上一个，workInProgressHook指向最新的，最后一个
+    // 等价
+    // workInProgressHook = workInProgressHook.next = hook
   }
   return workInProgressHook
 }

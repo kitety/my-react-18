@@ -95,3 +95,4 @@ function getStateFromUpdate(update, previousState) {
       break;
   }
 }
+
