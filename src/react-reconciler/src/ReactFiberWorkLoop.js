@@ -66,7 +66,6 @@ function prepareFreshStack(root) {
 }
 
 function renderRootSync(root) {
-  console.log('root: ', root);
   //开始构建fiber树 创建一个新的
   prepareFreshStack(root)
   // 工作循环同步

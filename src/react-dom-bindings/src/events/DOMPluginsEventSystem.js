@@ -16,9 +16,9 @@ export function listenToAllSupportedEvents(rootContainerElement) {
   //  根容器div#root只监听一次
   if (!rootContainerElement[listeningMarker]) {
     rootContainerElement[listeningMarker] = true
-    console.log('listenToAllSupportedEvents container: ', rootContainerElement);
+    // console.log('listenToAllSupportedEvents container: ', rootContainerElement);
     allNativeEvents.forEach((domEventName) => {
-      console.log('domEventName: ', domEventName);
+      // console.log('domEventName: ', domEventName);
       listenToNativeEvent(domEventName, true, rootContainerElement)
       listenToNativeEvent(domEventName, false, rootContainerElement)
     })
@@ -68,7 +68,7 @@ function dispatchEventsForPlugins(domEventName, eventSystemFlags, nativeEvent, t
   // 派发事件的数组
   const dispatchQueue = []
   extractEvents(dispatchQueue, domEventName, targetInst, nativeEvent, nativeEventTarget, eventSystemFlags, container)
-  console.log('dispatchQueue: ', dispatchQueue);
+  // console.log('dispatchQueue: ', dispatchQueue);
   processDispatchQueue(dispatchQueue, eventSystemFlags)
 
 
