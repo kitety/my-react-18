@@ -19,9 +19,14 @@ function reducer(state, action) {
 }
 function FunctionComponent() {
   const [number, setNumber] = React.useReducer(reducer, 0);
-  const [number2, setNumber2] = React.useReducer(reducer, 1);
+  let attrs = { id: "btn1" };
+  if (number === 3) {
+    delete attrs.id;
+    attrs.style = { color: "red" };
+  }
   return (
     <button
+      {...attrs}
       onClick={() => {
         // 组成双向循环链表
         setNumber({ type: "increment" }); // update1=>u2=>u3=>u1

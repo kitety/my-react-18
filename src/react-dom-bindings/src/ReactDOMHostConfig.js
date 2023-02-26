@@ -1,5 +1,5 @@
 import { preCacheFiberNode, updateFiberProps } from "./client/ReactDomComponentTree";
-import { setInitialProperties } from "./ReactDOMComponent";
+import { diffProperties, setInitialProperties, updateProperties } from "./ReactDOMComponent";
 
 // dom 操作
 export function shouldSetTextContent(type, props) {
@@ -70,4 +70,13 @@ export function appendChild(parentInstance, child) {
  */
 export function insertBefore(parent, child, beforeChild) {
   parent.insertBefore(child, beforeChild)
+}
+export function prepareUpdate(dom, type, oldProps, newProps) {
+  // 比较属性差异
+  return diffProperties(dom, type, oldProps, newProps)
+}
+
+export function commitUpdate(domElement, updatePayload, type, oldProps, newProps, finishedWork) {
+  updateProperties(domElement, updatePayload, type, oldProps, newProps, finishedWork)
+  updateFiberProps(domElement, newProps)
 }

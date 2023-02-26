@@ -1,7 +1,7 @@
 import logger, { indent } from "shared/logger";
-import { appendInitialChild, createInstance, createTextInstance, finalizeInitialChildren } from "react-dom-bindings/src/ReactDOMHostConfig";
+import { appendInitialChild, createInstance, createTextInstance, finalizeInitialChildren, prepareUpdate } from "react-dom-bindings/src/ReactDOMHostConfig";
 import { NoFlags, Update } from "./ReactFiberFlags";
-import { HostComponent, HostRoot, HostText } from "./ReactWorkTags";
+import { FunctionComponent, HostComponent, HostRoot, HostText } from "./ReactWorkTags";
 
 /**
  * 把当前的完成的fiber所有的子节点，对应的真实dom，都挂载到自己父parent真实dom节点上
@@ -58,15 +58,13 @@ function updateHostComponent(current, workInProgress, type, newProps) {
   const oldProps = current.memoizedProps //老的属性
   const instance = workInProgress.stateNode //节点
   // 比较新老属性，收集属性的差异
-  // const updatePayload = prepareUpdate(instance, type, oldProps, newProps)
-  const updatePayload = ['id', 'button1', 'children', '6']
+  const updatePayload = prepareUpdate(instance, type, oldProps, newProps)
+  // const updatePayload = ['id', 'button1', 'children', '6']
   // 让原生组件的新fiber的更新队列等于差异 [] array
   workInProgress.updateQueue = updatePayload
   if (updatePayload) {
     markUpdate(workInProgress)
   }
-
-
 }
 
 /**
@@ -86,6 +84,11 @@ export function completeWork(current, workInProgress) {
   switch (workInProgress.tag) {
     // host Root
     case HostRoot:
+      // 向上冒泡属性
+      bubbleProperties(workInProgress)
+      break
+    // function component
+    case FunctionComponent:
       // 向上冒泡属性
       bubbleProperties(workInProgress)
       break
