@@ -1,6 +1,6 @@
 import logger, { indent } from "shared/logger";
 import { appendInitialChild, createInstance, createTextInstance, finalizeInitialChildren } from "react-dom-bindings/src/ReactDOMHostConfig";
-import { NoFlags } from "./ReactFiberFlags";
+import { NoFlags, Update } from "./ReactFiberFlags";
 import { HostComponent, HostRoot, HostText } from "./ReactWorkTags";
 
 /**
@@ -41,6 +41,33 @@ function appendAllChildren(parent, workInProgress) {
     node = node.sibling
   }
 }
+function markUpdate(workInProgress) {
+  // 更新 添加更新副作用
+  workInProgress.flags |= Update
+
+}
+/**
+ * 在fiber的完成阶段准备更新dom
+ * @param {*} current button的老fiber
+ * @param {*} workInProgress button的新fiber
+ * @param {*} type 类型
+ * @param {*} newProps 新的属性
+ */
+function updateHostComponent(current, workInProgress, type, newProps) {
+  console.log('updateHostComponent: ', current, workInProgress, type, newProps);
+  const oldProps = current.memoizedProps //老的属性
+  const instance = workInProgress.stateNode //节点
+  // 比较新老属性，收集属性的差异
+  // const updatePayload = prepareUpdate(instance, type, oldProps, newProps)
+  const updatePayload = ['id', 'button1', 'children', '6']
+  // 让原生组件的新fiber的更新队列等于差异 [] array
+  workInProgress.updateQueue = updatePayload
+  if (updatePayload) {
+    markUpdate(workInProgress)
+  }
+
+
+}
 
 /**
  * 完成一个fiber节点
@@ -54,6 +81,7 @@ export function completeWork(current, workInProgress) {
   logger(' '.repeat(indent.number) + 'completeWork', workInProgress)
 
   const newProps = workInProgress.pendingProps
+  console.log('newProps: ', newProps);
   // 判断fiber的类型 标签的类型
   switch (workInProgress.tag) {
     // host Root
@@ -70,17 +98,24 @@ export function completeWork(current, workInProgress) {
       bubbleProperties(workInProgress)
       break;
     case HostComponent:
+      // 更新阶段就更新 更新和挂载不一样
       // 原生节点
       // 完成的是原生节点
       // 创建真实dom节点
       const { type } = workInProgress
-      const instance = createInstance(type, newProps, workInProgress)
-      // 初次挂载的新节点，目前只是处理创建的逻辑，后面此处会进行区分，初次挂载还是更新
-      // 把自己所有的儿子都添加到自己的身上
-      // *** h1 添加 hello span
-      appendAllChildren(instance, workInProgress)
-      workInProgress.stateNode = instance
-      finalizeInitialChildren(instance, type, newProps)
+      // 老fiber存在并且老fiber有真实dom，就走更新
+      if (current !== null && workInProgress.stateNode !== null) {
+        updateHostComponent(current, workInProgress, type, newProps)
+      } else {
+        const instance = createInstance(type, newProps, workInProgress)
+        // 初次挂载的新节点，目前只是处理创建的逻辑，后面此处会进行区分，初次挂载还是更新
+        // 把自己所有的儿子都添加到自己的身上
+        // *** h1 添加 hello span
+        appendAllChildren(instance, workInProgress)
+        workInProgress.stateNode = instance
+        finalizeInitialChildren(instance, type, newProps)
+      }
+
       // 向上冒泡属性
       bubbleProperties(workInProgress)
       break

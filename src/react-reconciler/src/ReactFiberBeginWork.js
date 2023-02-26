@@ -1,9 +1,9 @@
-import logger, { indent } from "shared/logger";
 import { shouldSetTextContent } from "react-dom-bindings/src/ReactDOMHostConfig";
+import logger, { indent } from "shared/logger";
 import { mountChildFibers, reconcileChildFibers } from "./ReactChildFiber";
 import { processUpdateQueue } from "./ReactFiberClassUpdateQueue";
-import { FunctionComponent, HostComponent, HostRoot, HostText, IndeterminateComponent } from "./ReactWorkTags";
 import { renderWithHooks } from "./ReactFiberHooks";
+import { FunctionComponent, HostComponent, HostRoot, HostText, IndeterminateComponent } from "./ReactWorkTags";
 /**
  * 根据新的虚拟dom生成新的fiber链表
  * @param {*} current 老的父fiber
@@ -84,6 +84,12 @@ export function mountIndeterminateComponent(current, workInProgress, Component) 
   reconcileChildren(current, workInProgress, value)
   return workInProgress.child
 }
+export function updateFunctionComponent(current, workInProgress, Component, nextProps) {
+  const nextChildren = renderWithHooks(current, workInProgress, Component, nextProps)
+  reconcileChildren(current, workInProgress, nextChildren)
+  return workInProgress.child
+
+}
 /**
  * 目标是根据虚拟dom，构建新的fiber子链表 child sibling
  * @param {*} current 老fiber
@@ -97,10 +103,15 @@ export function beginWork(current, workInProgress) {
   // console.log('workInProgress: ', workInProgress);
   switch (workInProgress.tag) {
     // 函数式和class React中有这两种组件，其实本质都是函数
-
     case IndeterminateComponent:
       return mountIndeterminateComponent(current, workInProgress, workInProgress.type)
-      break
+    // 函数组件
+    case FunctionComponent:
+      {
+        const Component = workInProgress.type
+        const nextProps = workInProgress.pendingProps
+        return updateFunctionComponent(current, workInProgress, Component, nextProps)
+      }
     // 根节点
     case HostRoot:
       // 更新子fiber树

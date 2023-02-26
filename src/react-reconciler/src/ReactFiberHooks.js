@@ -1,16 +1,80 @@
 import ReactSharedInternals from "shared/ReactSharedInternals"
 import { enqueueConcurrentHookUpdate } from "./ReactFiberConcurrentUpdates"
 import { scheduleUpdateOnFiber } from "./ReactFiberWorkLoop"
-
+// 当前正在渲染中的fiber
+let currentlyRenderingFiber = null
+// 当前正在使用中的hook
+let workInProgressHook = null
+// 当前hook对应的老的hook
+let currentHook = null
 const { ReactCurrentDispatcher } = ReactSharedInternals
 const HooksDispatcherOnMount = {
   // useReducer 挂载和更新的逻辑不一样的
   useReducer: mountReducer// 挂载reducer
 }
-// 当前正在渲染中的fiber
-let currentRenderingFiber = null
-// 当前正在使用中的hook
-let workInProgressHook = null
+const HooksDispatcherOnUpdate = {
+  useReducer: updateReducer
+}
+function updateReducer(reducer) {
+  // 获取新的hook
+  const hook = updateWorkInProcessHook()
+  // 获取新的hook的更新队列
+  const queue = hook.queue
+  // 老的hook
+  const current = currentHook
+
+  //重要是更新 基于老状态和更新队列，计算新状态
+  // 获取将要生效的更新队列
+  const pendingQueue = queue.pending
+  // 先去初始化一个新状态,取值为当前的状态
+  let newState = current.memoizedState // 0 老hook的状态
+  // 循环
+  if (pendingQueue !== null) {
+    queue.pending = null
+    const firstUpdate = pendingQueue.next;
+    let update = firstUpdate;
+    do {
+      const action = update.action
+      // 计算
+      newState = reducer(newState, action)
+      update = update.next
+    } while (update !== null && update !== firstUpdate);
+  }
+  hook.memoizedState = newState
+  console.log('newState: ', newState);
+  return [hook.memoizedState, queue.dispatch]
+
+}
+/**
+ * 构建新的hook
+ */
+function updateWorkInProcessHook() {
+  // 获取将要构建的新的hook的老hook
+  if (currentHook === null) {
+    // 当前的第一个hook
+    // 拿到老的fiber
+    const current = currentlyRenderingFiber.alternate
+    currentHook = current.memoizedState
+  } else {
+    currentHook = currentHook.next
+  }
+  // 根据老hook创建新hook 状态和队列取回来
+  const newHook = {
+    memoizedState: currentHook.memoizedState,
+    queue: currentHook.queue,
+    next: null
+  }
+  // 如果为空的话就赋值
+  if (workInProgressHook === null) {
+    // 第一个hook
+    currentlyRenderingFiber.memoizedState = workInProgressHook = newHook
+  } else {
+    // 单向链表
+    workInProgressHook = workInProgressHook.next = newHook
+  }
+  return workInProgressHook
+
+}
 
 function mountReducer(reducer, initialArgs) {
   const hook = mountWorkInProcessHook()
@@ -21,7 +85,7 @@ function mountReducer(reducer, initialArgs) {
   }
   // 队列
   hook.queue = queue
-  const dispatch = (queue.dispatch = dispatchReducerAction.bind(null, currentRenderingFiber, queue))
+  const dispatch = (queue.dispatch = dispatchReducerAction.bind(null, currentlyRenderingFiber, queue))
   return [hook.memoizedState, dispatch]
 }
 /**
@@ -58,7 +122,7 @@ function mountWorkInProcessHook() {
   if (workInProgressHook === null) {
     // 临时用workInProgress存储hook
     // 当前函数对应的fiber的状态，等于第一个hook对象   链表头
-    currentRenderingFiber.memorizedState = workInProgressHook = hook
+    currentlyRenderingFiber.memoizedState = workInProgressHook = hook
     // 不同类型的fiber存储的东西就是不一样的，函数组件存储的是hook 单链表
     // 根组件存储的是子虚拟dom
     // 原生组件存的是。。。
@@ -81,11 +145,22 @@ function mountWorkInProcessHook() {
  * @returns 虚拟dom或者说React元素
  */
 export function renderWithHooks(current, workInProgress, Component, props) {
-  currentRenderingFiber = workInProgress// function 对应的fiber
+  console.log('current: ', current);
+  currentlyRenderingFiber = workInProgress// function 对应的fiber
+  // 有老的fiber和老的hook链表，就是更新的逻辑
+  if (current !== null && current.memoizedState !== null) {
+    ReactCurrentDispatcher.current = HooksDispatcherOnUpdate//在更新阶段的hooks
+
+  } else {
+    ReactCurrentDispatcher.current = HooksDispatcherOnMount//在挂载阶段的hooks
+
+  }
   // 支持hooks
   // 在函数组件执行前给ReactSharedInternals赋值
   // 执行前赋值
-  ReactCurrentDispatcher.current = HooksDispatcherOnMount//在挂载阶段的hooks
   const children = Component(props)
+  // 清空
+  currentlyRenderingFiber = null
+  workInProgressHook = null
   return children
 }

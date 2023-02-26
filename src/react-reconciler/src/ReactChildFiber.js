@@ -1,8 +1,7 @@
 // createChildReconciler 创建子协调的方法
-
 import isArray from "shared/isArray";
 import { REACT_ELEMENT_TYPE } from "shared/ReactSymbols";
-import { createFiberFromElement, createFiberFromText } from "./ReactFiber";
+import { createFiberFromElement, createFiberFromText, createWorkInProgress } from "./ReactFiber";
 import { Placement } from "./ReactFiberFlags";
 
 /**
@@ -12,10 +11,49 @@ import { Placement } from "./ReactFiberFlags";
 function createChildReconciler(
   shouldTrackSideEffects,
 ) {
+  /**
+   *
+   * @param {*} fiber 老fiber
+   * @param {*} props 新属性
+   */
+  function useFiber(fiber, props) {
+    const clone = createWorkInProgress(fiber, props)
+    clone.index = 0
+    clone.sibling = null
+    return clone
+  }
   //  test 减少操作
   // shouldTrackSideEffects = true
   // 协调单个的子节点
-  function reconcileSingleElement(returnFiber, currentFirstFiber, element) {
+  /**
+  *
+  * @param {*} returnFiber 根fiber #root
+  * @param {*} currentFirstChild 老的function component对应的fiber
+  * @param {*} element 新的虚拟dom
+  * @returns 返回我们新的第一个子fiber
+  */
+  function reconcileSingleElement(returnFiber, currentFirstChild, element) {
+    // 新的虚拟dom的key，唯一标识
+    const key = element.key;
+    let child = currentFirstChild;
+    // 复用老的数据
+    while (child !== null) {
+      // 有老fiber
+      // 判断老fiber对应的key和新的虚拟dom的key是否一样
+      if (child.key === key) {
+        // 一样
+        // 判断老fiber的类型和新的虚拟dom的类型是否一样
+        if (child.type === element.type) {// p div
+          // type key一样的话，就可以复用老的fiber
+          const existing = useFiber(child, element.props)
+          existing.return = returnFiber
+          return existing
+        }
+      }
+      child = child.sibling
+    }
+
+
     // 因为我们现在实现的初次挂载，老节点的currentFirstFiber是null，所以可以直接根据虚拟dom创建新的fiber节点
     const created = createFiberFromElement(element)
     // 指向父亲
@@ -29,7 +67,8 @@ function createChildReconciler(
    */
   function placeSingleChild(newFiber) {
     // true，跟踪副作用
-    if (shouldTrackSideEffects) {
+    // 跟踪并且老fiber是个空的，说明是新的fiber
+    if (shouldTrackSideEffects && newFiber.alternate === null) {
       // 插入，要在最后的提交阶段插入节点
       // react的渲染氛围渲染和提交节点，渲染就是创建fiber树，提交就是把fiber树变成真实dom
       newFiber.flags |= Placement
@@ -77,10 +116,10 @@ function createChildReconciler(
   /**
    * 协调数组
    * @param {*} returnFiber
-   * @param {*} currentFirstFiber
+   * @param {*} currentFirstChild
    * @param {*} newChild
    */
-  function reconcileChildrenArray(returnFiber, currentFirstFiber, newChild) {
+  function reconcileChildrenArray(returnFiber, currentFirstChild, newChild) {
     // 返回的第一个新儿子
     let resultingFirstChild = null
     // 上一个新fiber
@@ -113,18 +152,20 @@ function createChildReconciler(
   /**
    * 比较子fibers dom diff就在这里 用老的子fiber链表和新的虚拟dom比较的过程
    * @param {*} returnFiber 新的父fiber 父亲
-   * @param {*} currentFirstFiber current指的是老的，老fiber的第一个子fiber 老儿子
+   * @param {*} currentFirstChild current指的是老的，老fiber的第一个子fiber 老儿子
    * @param {*} newChild 新的子虚拟dom h1这个虚拟dom 新儿子
    * 老儿子和新儿子比较，添加到父亲上
    */
-  function reconcileChildFibers(returnFiber, currentFirstFiber, newChild) {
+  function reconcileChildFibers(returnFiber, currentFirstChild, newChild) {
+    // 现在需要处理更新的逻辑了 处理dom diff
+    // 1. 单节点diff
     // 暂时只考虑新的节点只有一个的情况
     if (typeof newChild === 'object' && newChild !== null) {
       switch (newChild.$$typeof) {
         case REACT_ELEMENT_TYPE:
           // 放置单个儿子
           // 新的儿子是独生子，并且是虚拟dom
-          return placeSingleChild(reconcileSingleElement(returnFiber, currentFirstFiber, newChild))
+          return placeSingleChild(reconcileSingleElement(returnFiber, currentFirstChild, newChild))
 
         default:
           break;
@@ -134,7 +175,7 @@ function createChildReconciler(
     // 是个数组
     if (isArray(newChild)) {
 
-      return reconcileChildrenArray(returnFiber, currentFirstFiber, newChild)
+      return reconcileChildrenArray(returnFiber, currentFirstChild, newChild)
     }
     return null
   }
