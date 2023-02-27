@@ -190,8 +190,8 @@ export function commitMutationEffectsOnFiber(finishedWork, root) {
         const instance = finishedWork.stateNode
         if (instance !== null) {
           // dom元素存在 更新他
-          const newProps = finishedWork.memoizedState
-          const oldProps = current !== null ? current.memoizedState : newProps
+          const newProps = finishedWork.memoizedProps
+          const oldProps = current !== null ? current.memoizedProps : newProps
           const type = finishedWork.type
           const updatePayload = finishedWork.updateQueue
           finishedWork.updateQueue = null

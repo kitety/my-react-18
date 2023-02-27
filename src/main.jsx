@@ -19,11 +19,34 @@ function reducer(state, action) {
 }
 function FunctionComponent() {
   const [number, setNumber] = React.useReducer(reducer, 0);
+  //useState 是useReducer的简化
+  const [number1, setNumber1] = React.useState(0);
+  // useState setNumber1 传入的是老状态就不需要更新
   let attrs = { id: "btn1" };
-  if (number === 3) {
+  console.log("attrs: ", attrs);
+  if (number >= 3) {
     delete attrs.id;
     attrs.style = { color: "red" };
   }
+  return (
+    <button
+      {...attrs}
+      onClick={() => {
+        // number1 都是2
+        // 合并更新
+        // setNumber1(number1);
+        // setNumber1(number1 + 1);
+        // setNumber1(number1 + 2);
+
+        // 3
+        setNumber1((n) => n);
+        setNumber1((n) => n + 1);
+        setNumber1((n) => n + 2);
+      }}
+    >
+      {number1}
+    </button>
+  );
   return (
     <button
       {...attrs}

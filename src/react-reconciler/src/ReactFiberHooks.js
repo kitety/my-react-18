@@ -10,10 +10,20 @@ let currentHook = null
 const { ReactCurrentDispatcher } = ReactSharedInternals
 const HooksDispatcherOnMount = {
   // useReducer 挂载和更新的逻辑不一样的
-  useReducer: mountReducer// 挂载reducer
+  useReducer: mountReducer,// 挂载reducer
+  useState: mountState// 挂载reducer
 }
 const HooksDispatcherOnUpdate = {
-  useReducer: updateReducer
+  useReducer: updateReducer,
+  useState: updateState
+}
+function baseStateReducer(state, action) {
+  return typeof action === 'function' ? action(state) : action
+}
+// useState其实就是内置reducer的useReducer
+function updateState() {
+  return updateReducer(baseStateReducer)
+
 }
 function updateReducer(reducer) {
   // 获取新的hook
@@ -34,9 +44,14 @@ function updateReducer(reducer) {
     const firstUpdate = pendingQueue.next;
     let update = firstUpdate;
     do {
-      const action = update.action
-      // 计算
-      newState = reducer(newState, action)
+      if (update.hasEagerState) {
+        newState = update.eagerState
+      }
+      else {
+        const action = update.action
+        // 计算
+        newState = reducer(newState, action)
+      }
       update = update.next
     } while (update !== null && update !== firstUpdate);
   }
@@ -87,6 +102,48 @@ function mountReducer(reducer, initialArgs) {
   hook.queue = queue
   const dispatch = (queue.dispatch = dispatchReducerAction.bind(null, currentlyRenderingFiber, queue))
   return [hook.memoizedState, dispatch]
+}
+function mountState(initialArgs) {
+  // 复用 no  值一样就跳过更新
+  // return mountReducer(baseStateReducer, initialArgs)
+  const hook = mountWorkInProcessHook()
+  hook.memoizedState = initialArgs
+  const queue = {
+    pending: null,
+    dispatch: null,
+    lastRenderedReducer: baseStateReducer,//上一个reducer
+    lastRenderedState: initialArgs//上一个state
+  }
+  // 队列
+  hook.queue = queue
+  const dispatch = (queue.dispatch = dispatchSetState.bind(null, currentlyRenderingFiber, queue))
+  return [hook.memoizedState, dispatch]
+}
+function dispatchSetState(fiber, queue, action) {
+  // 派发动作，更新队列
+  const update = {
+    action,
+    next: null,
+    hasEagerState: false,//是否有急切的更新
+    eagerState: null,//急切更新状态
+  }
+  const { lastRenderedReducer, lastRenderedState } = queue
+  // 急切新状态：派发之后 立马计算
+  const eagerState = lastRenderedReducer(lastRenderedState, action)
+  update.eagerState = eagerState
+  update.hasEagerState = true
+  console.log('update: ', update);
+  // 一样就不更新
+  if (Object.is(eagerState, lastRenderedState)) {
+    return
+  }
+  queue.lastRenderedState = eagerState
+
+  // 下面是真正的入队更新 调度逻辑
+  // 入队
+  const root = enqueueConcurrentHookUpdate(fiber, queue, update)
+  // 调度更新
+  scheduleUpdateOnFiber(root)
 }
 /**
  * 执行派发动作的方法，更新状态，并且界面重新更新
@@ -162,5 +219,6 @@ export function renderWithHooks(current, workInProgress, Component, props) {
   // 清空
   currentlyRenderingFiber = null
   workInProgressHook = null
+  currentHook = null
   return children
 }
