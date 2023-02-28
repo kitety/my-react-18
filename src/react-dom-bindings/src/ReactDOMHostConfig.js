@@ -80,3 +80,7 @@ export function commitUpdate(domElement, updatePayload, type, oldProps, newProps
   updateProperties(domElement, updatePayload, type, oldProps, newProps, finishedWork)
   updateFiberProps(domElement, newProps)
 }
+
+export function removeChild(hostParent, deleteDom) {
+  hostParent.removeChild(deleteDom)
+}

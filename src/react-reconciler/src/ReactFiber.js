@@ -39,6 +39,8 @@ function FiberNode(tag, pendingProps, key) {
   this.alternate = null
   // 索引 默认0
   this.index = 0
+  // 存放将要删除的子fiber
+  this.deletions = null
 }
 // We use a double buffering pooling technique because we know that we'll
 // only ever need at most two versions of a tree. We pool the "other" unused

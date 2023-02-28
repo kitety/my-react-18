@@ -2,7 +2,7 @@
 import isArray from "shared/isArray";
 import { REACT_ELEMENT_TYPE } from "shared/ReactSymbols";
 import { createFiberFromElement, createFiberFromText, createWorkInProgress } from "./ReactFiber";
-import { Placement } from "./ReactFiberFlags";
+import { ChildDeletion, Placement } from "./ReactFiberFlags";
 
 /**
  *
@@ -11,6 +11,29 @@ import { Placement } from "./ReactFiberFlags";
 function createChildReconciler(
   shouldTrackSideEffects,
 ) {
+  // 删除儿子
+  /**
+   *
+   * @param {*} returnFiber 父亲
+   * @param {*} child 将删除的老节点
+   */
+  function deleteChild(returnFiber, childToDelete) {
+    // 没有副作用就删除
+    if (!shouldTrackSideEffects) {
+      return
+    }
+    // 有副作用
+    const deletions = returnFiber.deletions
+    // 没有
+    if (deletions === null) {
+      returnFiber.deletions = [childToDelete]
+      // 子节点删除
+      returnFiber.flags |= ChildDeletion
+    } else {
+      // 添加
+      returnFiber.deletions.push(ChildToDelete)
+    }
+  }
   /**
    *
    * @param {*} fiber 老fiber
@@ -49,6 +72,10 @@ function createChildReconciler(
           existing.return = returnFiber
           return existing
         }
+      } else {
+        // 单节点的情况
+        // key不一样，需要删除掉老的fiber
+        deleteChild(returnFiber, child)
       }
       child = child.sibling
     }

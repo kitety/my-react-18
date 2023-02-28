@@ -17,7 +17,7 @@ function reducer(state, action) {
       return state;
   }
 }
-function FunctionComponent() {
+function FunctionComponentOld() {
   const [number, setNumber] = React.useReducer(reducer, 0);
   //useState 是useReducer的简化
   const [number1, setNumber1] = React.useState(0);
@@ -59,6 +59,32 @@ function FunctionComponent() {
     >
       {number}
     </button>
+  );
+}
+// 相同key 相同类型
+function FunctionComponent2() {
+  const [number, setNumber] = React.useState(0);
+  return number === 0 ? (
+    <div onClick={() => setNumber(number + 1)} key='title' id='title'>
+      title{number}
+    </div>
+  ) : (
+    <div onClick={() => setNumber(number + 1)} key='title' id='title2'>
+      title2 {number}
+    </div>
+  );
+}
+// key不同 类型相同
+function FunctionComponent() {
+  const [number, setNumber] = React.useState(0);
+  return number === 0 ? (
+    <div onClick={() => setNumber(number + 1)} key='title1' id='title'>
+      Mytitle
+    </div>
+  ) : (
+    <div onClick={() => setNumber(number + 1)} key='title2' id='title2'>
+      Mytitle2
+    </div>
   );
 }
 // function FunctionComponent() {

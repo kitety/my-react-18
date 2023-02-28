@@ -8,9 +8,7 @@ const RESERVED_PROPS = {
   __self: true,
   __source: true,
 }
-function hasValidKey(config) {
-  return config.key !== undefined
-}
+
 function hasValidRef(config) {
   return config.ref !== undefined
 }
@@ -24,7 +22,9 @@ function ReactElement(type, key, ref, props) {
     props// 属性 children style id
   }
 }
-export function jsxDEV(type, config) {
+// 在react17以前key在config中，children放第三个参数
+// 在17以后key放在第三个参数中，children在config中
+export function jsxDEV(type, config, maybeKey) {
   // 属性名
   let propName;
   // 属性对象
@@ -33,8 +33,8 @@ export function jsxDEV(type, config) {
   let key = null;
   // 引用，通过这个获取真实dom的需求
   let ref = null
-  if (hasValidKey(config)) {
-    key = config.key
+  if (typeof maybeKey !== 'undefined') {
+    key = maybeKey
   }
   if (hasValidRef(config)) {
     ref = config.ref

@@ -13,4 +13,4 @@ export const Update = /*                       */ 0b000000000000000000000000100;
 export const ChildDeletion = /*                */ 0b000000000000000000000010000;
 export const MutationMask =
   Placement |
-  Update
+  Update | ChildDeletion
