@@ -7,7 +7,7 @@ let concurrentQueuesIndex = 0
 export function finishQueuingConcurrentUpdates() {
   // 缓存索引
   const endIndex = concurrentQueuesIndex
-  console.log('endIndex: ', endIndex);
+
   concurrentQueuesIndex = 0
   let i = 0;
   // 拿到之前存的数据
@@ -71,7 +71,7 @@ function enqueueUpdate(fiber, queue, update) {
   concurrentQueue[concurrentQueuesIndex++] = fiber// 函数组件对应的fiber
   concurrentQueue[concurrentQueuesIndex++] = queue//要更新的hook对应的更新的队列
   concurrentQueue[concurrentQueuesIndex++] = update//更新对象
-  console.log('concurrentQueue: ', concurrentQueue);
+
 }
 /*
  * 本来此文件要处理更新优先级的问题

@@ -31,7 +31,7 @@ function createChildReconciler(
       returnFiber.flags |= ChildDeletion
     } else {
       // 添加
-      returnFiber.deletions.push(ChildToDelete)
+      returnFiber.deletions.push(childToDelete)
     }
   }
   /**
@@ -44,6 +44,19 @@ function createChildReconciler(
     clone.index = 0
     clone.sibling = null
     return clone
+  }
+
+  // 删除currentFirstChild 和他之后的兄弟节点
+  function deleteRemainingChildren(returnFiber, currentFirstChild) {
+    if (!shouldTrackSideEffects) {
+      return null
+    }
+    let childToDelete = currentFirstChild
+    while (childToDelete !== null) {
+      deleteChild(returnFiber, childToDelete)
+      childToDelete = childToDelete.sibling
+    }
+    return null
   }
   //  test 减少操作
   // shouldTrackSideEffects = true
@@ -67,10 +80,20 @@ function createChildReconciler(
         // 一样
         // 判断老fiber的类型和新的虚拟dom的类型是否一样
         if (child.type === element.type) {// p div
+          // 删除其他的子节点 其他的弟弟 这里只针对一个的情况
+          deleteRemainingChildren(returnFiber, child.sibling)
           // type key一样的话，就可以复用老的fiber
           const existing = useFiber(child, element.props)
           existing.return = returnFiber
           return existing
+        } else {
+          // 类型不同
+          // 删除包括当前fiber在内的所有的老fiber，生成新的fiber
+          // 有点像同级比较
+
+          // key一样的老fiber，但是类型不同，不能复用老fiber，把剩下的全部删除
+          // 删除剩下的儿子
+          deleteRemainingChildren(returnFiber, child)
         }
       } else {
         // 单节点的情况
@@ -82,6 +105,7 @@ function createChildReconciler(
 
 
     // 因为我们现在实现的初次挂载，老节点的currentFirstFiber是null，所以可以直接根据虚拟dom创建新的fiber节点
+    // 老fiber没有用到就没有了 回收。如果有老fiber的话
     const created = createFiberFromElement(element)
     // 指向父亲
     created.return = returnFiber

@@ -54,7 +54,6 @@ function markUpdate(workInProgress) {
  * @param {*} newProps 新的属性
  */
 function updateHostComponent(current, workInProgress, type, newProps) {
-  console.log('updateHostComponent: ', current, workInProgress, type, newProps);
   const oldProps = current.memoizedProps //老的属性
   const instance = workInProgress.stateNode //节点
   // 比较新老属性，收集属性的差异
@@ -79,7 +78,6 @@ export function completeWork(current, workInProgress) {
   logger(' '.repeat(indent.number) + 'completeWork', workInProgress)
 
   const newProps = workInProgress.pendingProps
-  console.log('newProps: ', newProps);
   // 判断fiber的类型 标签的类型
   switch (workInProgress.tag) {
     // host Root

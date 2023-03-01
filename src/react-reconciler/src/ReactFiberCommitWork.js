@@ -83,6 +83,7 @@ function commitDeletionEffectsOnFiber(finishedRoot, nearestMountAncestor, delete
 function recursivelyTraverseMutationEffects(root, parentFiber) {
   //先处理删除
   const deletions = parentFiber.deletions
+  parentFiber.deletions = null
   if (deletions !== null) {
     // 有需要删除的子fiber
     for (let i = 0; i < deletions.length; i++) {

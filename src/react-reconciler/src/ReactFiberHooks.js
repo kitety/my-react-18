@@ -56,7 +56,7 @@ function updateReducer(reducer) {
     } while (update !== null && update !== firstUpdate);
   }
   hook.memoizedState = newState
-  console.log('newState: ', newState);
+
   return [hook.memoizedState, queue.dispatch]
 
 }
@@ -132,7 +132,7 @@ function dispatchSetState(fiber, queue, action) {
   const eagerState = lastRenderedReducer(lastRenderedState, action)
   update.eagerState = eagerState
   update.hasEagerState = true
-  console.log('update: ', update);
+
   // 一样就不更新
   if (Object.is(eagerState, lastRenderedState)) {
     return
@@ -152,7 +152,7 @@ function dispatchSetState(fiber, queue, action) {
  * @param {*} action 派发的动作
  */
 function dispatchReducerAction(fiber, queue, action) {
-  console.log('fiber, queue, action: ', fiber, queue, action);
+
   // 在每个hook里面会放一个哦更新队列，更新队列是一个更新对象的循环链表 update.next=u2 u2.next=u1
   // 更新逻辑
   const update = {
@@ -202,7 +202,7 @@ function mountWorkInProcessHook() {
  * @returns 虚拟dom或者说React元素
  */
 export function renderWithHooks(current, workInProgress, Component, props) {
-  console.log('current: ', current);
+
   currentlyRenderingFiber = workInProgress// function 对应的fiber
   // 有老的fiber和老的hook链表，就是更新的逻辑
   if (current !== null && current.memoizedState !== null) {

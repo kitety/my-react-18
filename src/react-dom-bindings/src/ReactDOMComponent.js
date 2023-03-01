@@ -107,7 +107,6 @@ export function diffProperties(domElement, tag, lastProps, nextProps) {
   if (styleUpdates) {
     (updatePayload = updatePayload || []).push(STYLE, styleUpdates)
   }
-  console.log('updatePayload: ', updatePayload);
 
   return updatePayload;//[key1,value1,key2,value2]
 }
@@ -115,7 +114,6 @@ export function updateProperties(domElement, updatePayload) {
   updateDOMProperties(domElement, updatePayload)
 }
 function updateDOMProperties(domElement, updatePayload) {
-  console.log('domElement:updateDOMProperties ', domElement);
   for (let i = 0; i < updatePayload.length; i += 2) {
     const propKey = updatePayload[i];
     const propValue = updatePayload[i + 1];

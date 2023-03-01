@@ -23,7 +23,7 @@ function FunctionComponentOld() {
   const [number1, setNumber1] = React.useState(0);
   // useState setNumber1 传入的是老状态就不需要更新
   let attrs = { id: "btn1" };
-  console.log("attrs: ", attrs);
+  // console.log("attrs: ", attrs);
   if (number >= 3) {
     delete attrs.id;
     attrs.style = { color: "red" };
@@ -75,16 +75,48 @@ function FunctionComponent2() {
   );
 }
 // key不同 类型相同
+// function FunctionComponent() {
+//   const [number, setNumber] = React.useState(0);
+//   return number === 0 ? (
+//     <div onClick={() => setNumber(number + 1)} key='title1' id='title'>
+//       Mytitle
+//     </div>
+//   ) : (
+//     <div onClick={() => setNumber(number + 1)} key='title2' id='title2'>
+//       Mytitle2
+//     </div>
+//   );
+// }
+// key相同，类型不同
+// function FunctionComponent2() {
+//   const [number, setNumber] = React.useState(0);
+//   return number === 0 ? (
+//     <div onClick={() => setNumber(number + 1)} key='title1' id='title1'>
+//       title1
+//     </div>
+//   ) : (
+//     <p onClick={() => setNumber(number + 1)} key='title1' id='title1'>
+//       title1
+//     </p>
+//   );
+// }
+// 原来多节点，现在只有一个节点
 function FunctionComponent() {
   const [number, setNumber] = React.useState(0);
   return number === 0 ? (
-    <div onClick={() => setNumber(number + 1)} key='title1' id='title'>
-      Mytitle
-    </div>
+    <ul key='container' onClick={() => setNumber(number + 1)}>
+      <li key='A'>A</li>
+      <li key='B' id='B'>
+        B
+      </li>
+      <li key='C'>C</li>
+    </ul>
   ) : (
-    <div onClick={() => setNumber(number + 1)} key='title2' id='title2'>
-      Mytitle2
-    </div>
+    <ul key='container' onClick={() => setNumber(number + 1)}>
+      <li key='B' id='B2'>
+        B2
+      </li>
+    </ul>
   );
 }
 // function FunctionComponent() {
