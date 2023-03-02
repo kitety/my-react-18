@@ -218,54 +218,88 @@ function FunctionComponent2() {
 //   );
 // }
 // 节点移动增加删除
-function FunctionComponent() {
-  console.log("FunctionComponent");
+// function FunctionComponent() {
+//   console.log("FunctionComponent");
+//   const [number, setNumber] = React.useState(0);
+//   return number === 0 ? (
+//     <ul key='container' onClick={() => setNumber(number + 1)}>
+//       <li key='A' id='A'>
+//         A
+//       </li>
+//       <li key='B' id='B'>
+//         B
+//       </li>
+//       <li key='C' id='C'>
+//         C
+//       </li>
+//       <li key='D' id='D'>
+//         D
+//       </li>
+//       <li key='E' id='E'>
+//         E
+//       </li>
+//       <li key='F' id='F'>
+//         F
+//       </li>
+//     </ul>
+//   ) : (
+//     <ul key='container' onClick={() => setNumber(number + 1)}>
+//       <li key='A' id='A2'>
+//         A2
+//       </li>
+//       <li key='C' id='C2'>
+//         C2
+//       </li>
+//       <li key='E' id='E2'>
+//         E2
+//       </li>
+//       <li key='B' id='B2'>
+//         B2
+//       </li>
+//       <li key='G' id='G2'>
+//         G
+//       </li>
+//       <li key='D' id='D2'>
+//         D2
+//       </li>
+//     </ul>
+//   );
+// }
+function Counter() {
   const [number, setNumber] = React.useState(0);
-  return number === 0 ? (
-    <ul key='container' onClick={() => setNumber(number + 1)}>
-      <li key='A' id='A'>
-        A
-      </li>
-      <li key='B' id='B'>
-        B
-      </li>
-      <li key='C' id='C'>
-        C
-      </li>
-      <li key='D' id='D'>
-        D
-      </li>
-      <li key='E' id='E'>
-        E
-      </li>
-      <li key='F' id='F'>
-        F
-      </li>
-    </ul>
-  ) : (
-    <ul key='container' onClick={() => setNumber(number + 1)}>
-      <li key='A' id='A2'>
-        A2
-      </li>
-      <li key='C' id='C2'>
-        C2
-      </li>
-      <li key='E' id='E2'>
-        E2
-      </li>
-      <li key='B' id='B2'>
-        B2
-      </li>
-      <li key='G' id='G2'>
-        G
-      </li>
-      <li key='D' id='D2'>
-        D2
-      </li>
-    </ul>
+  React.useEffect(() => {
+    console.log("timer useEffect1");
+    const timer = setInterval(() => {
+      setNumber((n) => n + 1);
+    }, 1000);
+    return () => {
+      clearInterval(timer);
+      console.log("destroy timer useEffect1");
+    };
+  }, []);
+  // React.useEffect(() => {
+  //   console.log("useEffect2");
+  //   return () => {
+  //     console.log("destroy useEffect2");
+  //   };
+  // });
+  // React.useEffect(() => {
+  //   console.log("useEffect3");
+  //   return () => {
+  //     console.log("destroy useEffect3");
+  //   };
+  // });
+  return (
+    <div
+      onClick={() => {
+        setNumber(number + 1);
+      }}
+    >
+      {number}
+    </div>
   );
 }
-let element = <FunctionComponent />;
+let element = <Counter />;
 // old let element = /*#__PURE__*/React.createElement(FunctionComponent, null);
 // new let element = /*#__PURE__*/(0, _jsxRuntime.jsx)(FunctionComponent, {});
 console.log("element: ", element);

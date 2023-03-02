@@ -1,6 +1,8 @@
 import ReactSharedInternals from "shared/ReactSharedInternals"
 import { enqueueConcurrentHookUpdate } from "./ReactFiberConcurrentUpdates"
 import { scheduleUpdateOnFiber } from "./ReactFiberWorkLoop"
+import { Passive as PassiveEffect } from "./ReactHookEffectTags"
+import { Passive as HookPassive, HasEffect as HookHasEffect } from './ReactHookEffectTags'
 // 当前正在渲染中的fiber
 let currentlyRenderingFiber = null
 // 当前正在使用中的hook
@@ -11,11 +13,70 @@ const { ReactCurrentDispatcher } = ReactSharedInternals
 const HooksDispatcherOnMount = {
   // useReducer 挂载和更新的逻辑不一样的
   useReducer: mountReducer,// 挂载reducer
-  useState: mountState// 挂载reducer
+  useState: mountState,// 挂载reducer
+  useEffect: mountEffect// 挂载effect
 }
 const HooksDispatcherOnUpdate = {
   useReducer: updateReducer,
-  useState: updateState
+  useState: updateState,
+  useEffect: updateEffect
+}
+function mountEffect(create, deps) {
+  // 两个标识
+  // PassiveEffect 给fiber
+  // HookPassive 给hook
+  return mountEffectImpl(PassiveEffect, HookPassive, create, deps)
+}
+function updateEffect(create, deps) {
+
+}
+function mountEffectImpl(fiberFlags, hookFlags, create, deps) {
+  const hook = mountWorkInProcessHook()
+  const nextDeps = deps === undefined ? null : deps
+  // 给函数组件fiber添加flags
+  currentlyRenderingFiber.flags |= fiberFlags
+  hook.memoizedState = pushEffect(HookHasEffect | hookFlags, create, undefined, nextDeps)
+}
+/**
+ * 添加effect链表
+ * @param {*} tag effect的标签
+ * @param {*} create 创建方法
+ * @param {*} destroy 销毁方法
+ * @param {*} nextDeps 依赖数组
+ */
+function pushEffect(tag, create, destroy, nextDeps) {
+  const effect = {
+    tag, create, destroy, nextDeps, next: null
+  }
+  // 拿到fiber当前的更新队列
+  let componentUpdateQueue = currentlyRenderingFiber.updateQueue
+  // 第一个hook
+  if (componentUpdateQueue === null) {
+    // 构建循环链表
+    componentUpdateQueue = createFunctionComponentUpdateQueue()
+    currentlyRenderingFiber.updateQueue = componentUpdateQueue
+    componentUpdateQueue.lastEffect = effect.next = effect
+  } else {
+    const lastEffect = componentUpdateQueue.lastEffect
+    if (lastEffect === null) {
+      // 循环
+      componentUpdateQueue.lastEffect = effect.next = effect
+    } else {
+      // 加入新的effect
+      const firstEffect = lastEffect.next
+      lastEffect.next = effect
+      effect.next = firstEffect
+      componentUpdateQueue.lastEffect = effect
+    }
+  }
+  return effect
+
+}
+// 指向循环列表尾部的指针
+function createFunctionComponentUpdateQueue() {
+  return {
+    lastEffect: null
+  }
 }
 function baseStateReducer(state, action) {
   return typeof action === 'function' ? action(state) : action

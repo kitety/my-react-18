@@ -16,3 +16,7 @@ export function useState(initialArg) {
   const dispatcher = resolveDispatcher();
   return dispatcher.useState(initialArg);
 }
+export function useEffect(create) {
+  const dispatcher = resolveDispatcher();
+  return dispatcher.useEffect(create);
+}
