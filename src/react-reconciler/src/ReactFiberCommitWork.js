@@ -1,6 +1,7 @@
 import { appendChild, commitUpdate, insertBefore, removeChild } from "react-dom-bindings/src/ReactDOMHostConfig";
-import { MutationMask, Placement, Update } from "./ReactFiberFlags";
+import { MutationMask, Passive, Placement, Update } from "./ReactFiberFlags";
 import { FunctionComponent, HostComponent, HostRoot, HostText } from "./ReactWorkTags";
+import { HasEffect as HookHasEffect, Passive as HookPassive } from './ReactHookEffectTags'
 
 // 真实节点的父亲 方便删除
 let hostParent = null
@@ -295,5 +296,68 @@ export function commitMutationEffectsOnFiber(finishedWork, root) {
       break
     default:
       break
+  }
+}
+// 执行卸载副作用
+export function commitPassiveUnmountEffects(finishedWork) {
+
+}
+// 执行挂载副作用
+export function commitPassiveMountEffects(root, finishedWork) {
+  commitPassiveMountOnFiber(root, finishedWork)
+}
+function commitPassiveMountOnFiber(finishedRoot, finishedWork) {
+  const flags = finishedWork.flags
+  switch (finishedWork.tag) {
+    case HostRoot: {
+      // 逐渐的遍历子节点
+      recursivelyTraversePassiveMountEffects(finishedRoot, finishedWork)
+      break
+    }
+    case FunctionComponent: {
+      // 函数组件
+      recursivelyTraversePassiveMountEffects(finishedRoot, finishedWork)
+      if (Passive & flags) {//1024
+        // 执行副作用
+        commitHookPassiveMountEffect(finishedWork, HookPassive | HookHasEffect)
+      }
+      break
+    }
+    default:
+      break;
+  }
+}
+function recursivelyTraversePassiveMountEffects(root, parentFiber) {
+  if (parentFiber.subtreeFlags & Passive) {
+    // 递归遍历子节点
+    let child = parentFiber.child
+    while (child !== null) {
+      commitPassiveMountOnFiber(root, child)
+      child = child.sibling
+    }
+  }
+}
+
+function commitHookPassiveMountEffect(finishedWork, hookFlags) {
+  commitHookEffectListMount(hookFlags, finishedWork)
+}
+
+function commitHookEffectListMount(flags, finishedWork) {
+  const updateQueue = finishedWork.updateQueue
+  const lastEffect = updateQueue !== null ? updateQueue.lastEffect : null
+  if (lastEffect !== null) {
+    // 指向最后一个，拿到第一个
+    const firstEffect = lastEffect.next
+    let effect = firstEffect
+    do {
+      // 有这个tag
+      if ((effect.tag & flags) === flags) {
+        // Unmount
+        const create = effect.create
+        // 指向create，返回值是destroy
+        effect.destroy = create()
+      }
+      effect = effect.next
+    } while (effect !== firstEffect);
   }
 }

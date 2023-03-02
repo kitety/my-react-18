@@ -2,14 +2,17 @@
 import { scheduleCallback } from 'scheduler'
 import { createWorkInProgress } from './ReactFiber'
 import { beginWork } from './ReactFiberBeginWork'
-import { commitMutationEffectsOnFiber } from './ReactFiberCommitWork'
+import { commitMutationEffectsOnFiber, commitPassiveMountEffects, commitPassiveUnmountEffects } from './ReactFiberCommitWork'
 import { completeWork } from './ReactFiberCompleteWork'
 import { finishQueuingConcurrentUpdates } from './ReactFiberConcurrentUpdates'
-import { ChildDeletion, MutationMask, NoFlags, Placement, Update } from './ReactFiberFlags'
+import { ChildDeletion, MutationMask, NoFlags, Passive, Placement, Update } from './ReactFiberFlags'
 import { FunctionComponent, HostComponent, HostRoot, HostText } from './ReactWorkTags'
 // 正在进行的工作
 let workInProgress = null
 let workInProgressRoot = null
+// 此根节点上有没有useEffect类型的副作用
+let rootDoseHasPassiveEffect = false
+let rootWithPendingPassiveEffects = null// 具有useEffect类型的副作用的根节点 fiberRootNode
 
 /**
  * 计划更新root
@@ -48,10 +51,33 @@ function performConcurrentWorkOnRoot(root) {
   commitRoot(root)
   workInProgressRoot = null
 }
+//
+function flushPassiveEffect() {
+  if (rootWithPendingPassiveEffects !== null) {
+    const root = rootWithPendingPassiveEffects
+    // 执行卸载副作用
+    commitPassiveUnmountEffects(root.current)
+    // 执行挂载副作用
+    commitPassiveMountEffects(root, root.current)
+  }
+}
 function commitRoot(root) {
   printFinishedWork(root.finishedWork)
   // 拿到完成的工作
+  // finishedWork就是刚才构建的fiber树的 根节点
   const { finishedWork } = root
+  if (((finishedWork.subtreeFlags & Passive) !== NoFlags) || ((finishedWork.flags & Passive) !== NoFlags)) {
+    // 自己有副作用或者孩子有副作用
+    // 标记变量
+    if (!rootDoseHasPassiveEffect) {
+      rootDoseHasPassiveEffect = true
+      // 刷新副作用
+      // 开启下一个宏任务，在绘制之后执行
+      scheduleCallback(flushPassiveEffect)
+    }
+
+  }
+  // console.log('finishedWork: ', finishedWork);
   // 更新 插入 有flags
   // 判断子树有没有副作用
   const subtreeHasEffects = (finishedWork.subtreeFlags & MutationMask) !== NoFlags
@@ -60,10 +86,15 @@ function commitRoot(root) {
   if (subtreeHasEffects || rootHasEffects) {
     // 有flags，说明有更新，需要插入
     // 在fiber上变更操作的副作用
+    // dom执行变动之后，root.current指向新的fiber树
     commitMutationEffectsOnFiber(finishedWork, root)
+    if (rootDoseHasPassiveEffect) {
+      rootDoseHasPassiveEffect = false
+      rootWithPendingPassiveEffects = root
+    }
+
   }
   // dom变更后，root current 指向新的fiber树
-
   root.current = finishedWork
 }
 function prepareFreshStack(root) {

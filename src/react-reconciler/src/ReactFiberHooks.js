@@ -1,7 +1,7 @@
 import ReactSharedInternals from "shared/ReactSharedInternals"
 import { enqueueConcurrentHookUpdate } from "./ReactFiberConcurrentUpdates"
 import { scheduleUpdateOnFiber } from "./ReactFiberWorkLoop"
-import { Passive as PassiveEffect } from "./ReactHookEffectTags"
+import { Passive as PassiveEffect } from "./ReactFiberFlags"
 import { Passive as HookPassive, HasEffect as HookHasEffect } from './ReactHookEffectTags'
 // 当前正在渲染中的fiber
 let currentlyRenderingFiber = null

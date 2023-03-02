@@ -277,18 +277,18 @@ function Counter() {
       console.log("destroy timer useEffect1");
     };
   }, []);
-  // React.useEffect(() => {
-  //   console.log("useEffect2");
-  //   return () => {
-  //     console.log("destroy useEffect2");
-  //   };
-  // });
-  // React.useEffect(() => {
-  //   console.log("useEffect3");
-  //   return () => {
-  //     console.log("destroy useEffect3");
-  //   };
-  // });
+  React.useEffect(() => {
+    console.log("useEffect2");
+    return () => {
+      console.log("destroy useEffect2");
+    };
+  });
+  React.useEffect(() => {
+    console.log("useEffect3");
+    return () => {
+      console.log("destroy useEffect3");
+    };
+  });
   return (
     <div
       onClick={() => {
