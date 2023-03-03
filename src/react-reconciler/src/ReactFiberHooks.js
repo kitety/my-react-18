@@ -1,8 +1,8 @@
 import ReactSharedInternals from "shared/ReactSharedInternals"
 import { enqueueConcurrentHookUpdate } from "./ReactFiberConcurrentUpdates"
-import { Passive as PassiveEffect } from "./ReactFiberFlags"
+import { Passive as PassiveEffect, Update as UpdateEffect } from "./ReactFiberFlags"
 import { scheduleUpdateOnFiber } from "./ReactFiberWorkLoop"
-import { HasEffect as HookHasEffect, Passive as HookPassive } from './ReactHookEffectTags'
+import { HasEffect as HookHasEffect, Passive as HookPassive, Layout as HookLayout } from './ReactHookEffectTags'
 // 当前正在渲染中的fiber
 let currentlyRenderingFiber = null
 // 当前正在使用中的hook
@@ -14,12 +14,21 @@ const HooksDispatcherOnMount = {
   // useReducer 挂载和更新的逻辑不一样的
   useReducer: mountReducer,// 挂载reducer
   useState: mountState,// 挂载reducer
-  useEffect: mountEffect// 挂载effect
+  useEffect: mountEffect,// 挂载effect
+  useLayoutEffect: mountLayoutEffect// 挂载effect
 }
 const HooksDispatcherOnUpdate = {
   useReducer: updateReducer,
   useState: updateState,
-  useEffect: updateEffect
+  useEffect: updateEffect,
+  useLayoutEffect: updateLayoutEffect,
+}
+function mountLayoutEffect(create, deps) {
+  //                    fiber hook
+  return mountEffectImpl(UpdateEffect, HookLayout, create, deps)
+}
+function updateLayoutEffect(create, deps) {
+  return updateEffectImpl(UpdateEffect, HookLayout, create, deps)
 }
 function mountEffect(create, deps) {
   // 两个标识
@@ -34,7 +43,6 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps) {
   const hook = updateWorkInProcessHook()
   const nextDeps = deps === undefined ? null : deps
   let destroy
-  console.log('currentHook', currentHook)
   // 上一个老hook
   if (currentHook !== null) {
     // 获取此useEffect这个hook上的了老的effect对象， create deps array

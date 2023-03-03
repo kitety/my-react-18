@@ -287,7 +287,6 @@ function createChildReconciler(
    * @param {*} newChildren
    */
   function reconcileChildrenArray(returnFiber, currentFirstChild, newChildren) {
-    console.log('returnFiber, currentFirstChild, newChild: ', returnFiber, currentFirstChild, newChildren);
     // 返回的第一个新儿子
     let resultingFirstChild = null
     // 上一个新fiber

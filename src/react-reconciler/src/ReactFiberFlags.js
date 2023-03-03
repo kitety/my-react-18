@@ -17,3 +17,5 @@ export const MutationMask =
 
 //如果函数组件里面使用了useEffect，flags会被设置有Passive
 export const Passive = /*                      */ 0b000000000000000100000000000;
+// useLayoutEffect
+export const LayoutMask = Update

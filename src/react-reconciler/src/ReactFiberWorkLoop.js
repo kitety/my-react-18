@@ -2,7 +2,7 @@
 import { scheduleCallback } from 'scheduler'
 import { createWorkInProgress } from './ReactFiber'
 import { beginWork } from './ReactFiberBeginWork'
-import { commitMutationEffectsOnFiber, commitPassiveMountEffects, commitPassiveUnmountEffects } from './ReactFiberCommitWork'
+import { commitLayoutEffect, commitMutationEffectsOnFiber, commitPassiveMountEffects, commitPassiveUnmountEffects } from './ReactFiberCommitWork'
 import { completeWork } from './ReactFiberCompleteWork'
 import { finishQueuingConcurrentUpdates } from './ReactFiberConcurrentUpdates'
 import { ChildDeletion, MutationMask, NoFlags, Passive, Placement, Update } from './ReactFiberFlags'
@@ -88,6 +88,8 @@ function commitRoot(root) {
     // 在fiber上变更操作的副作用
     // dom执行变动之后，root.current指向新的fiber树
     commitMutationEffectsOnFiber(finishedWork, root)
+    // 执行useEffectLayout
+    commitLayoutEffect(finishedWork, root)
     if (rootDoseHasPassiveEffect) {
       rootDoseHasPassiveEffect = false
       rootWithPendingPassiveEffects = root

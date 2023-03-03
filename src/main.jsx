@@ -269,18 +269,18 @@ function Counter() {
   const [number, setNumber] = React.useState(0);
   React.useEffect(() => {
     console.log("timer useEffect1");
-    const timer = setInterval(() => {
-      // setNumber((n) => n + 1);
-    }, 1000);
+    // const timer = setInterval(() => {
+    // setNumber((n) => n + 1);
+    // }, 1000);
     return () => {
-      clearInterval(timer);
+      // clearInterval(timer);
       console.log("destroy timer useEffect1");
     };
   }, []);
-  React.useEffect(() => {
-    console.log("useEffect2");
+  React.useLayoutEffect(() => {
+    console.log("useLayoutEffect2");
     return () => {
-      console.log("destroy useEffect2");
+      console.log("destroy useLayoutEffect2");
     };
   });
   React.useEffect(() => {

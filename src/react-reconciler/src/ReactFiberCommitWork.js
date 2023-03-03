@@ -1,6 +1,6 @@
 import { appendChild, commitUpdate, insertBefore, removeChild } from "react-dom-bindings/src/ReactDOMHostConfig";
-import { MutationMask, Passive, Placement, Update } from "./ReactFiberFlags";
-import { HasEffect as HookHasEffect, Passive as HookPassive } from './ReactHookEffectTags';
+import { LayoutMask, MutationMask, Passive, Placement, Update } from "./ReactFiberFlags";
+import { HasEffect as HookHasEffect, Layout as HookLayout, Passive as HookPassive } from './ReactHookEffectTags';
 import { FunctionComponent, HostComponent, HostRoot, HostText } from "./ReactWorkTags";
 
 // 真实节点的父亲 方便删除
@@ -258,7 +258,18 @@ export function commitMutationEffectsOnFiber(finishedWork, root) {
   const flags = finishedWork.flags
 
   switch (finishedWork.tag) {
-    case FunctionComponent:
+    case FunctionComponent: {
+      // 递归便利变更副作用
+      // 先遍历他们的子节点，处理他们的子节点上的副作用
+      recursivelyTraverseMutationEffects(root, finishedWork);
+      // 再处理自己身上的副作用
+      commitReconciliationEffect(finishedWork)
+      // useLayoutEffect 的销毁事件
+      if (flags & Update) {
+        commitHookEffectListUnmount(HookLayout | HookHasEffect, finishedWork)
+      }
+      break
+    }
     case HostRoot:
     case HostText: {
       // 递归便利变更副作用
@@ -300,7 +311,6 @@ export function commitMutationEffectsOnFiber(finishedWork, root) {
 }
 // 执行卸载副作用
 export function commitPassiveUnmountEffects(finishedWork) {
-  debugger
   commitPassiveUnmountOnFiber(finishedWork)
 }
 // 执行挂载副作用
@@ -420,3 +430,49 @@ function commitHookEffectListMount(flags, finishedWork) {
     } while (effect !== firstEffect);
   }
 }
+// layout effect
+// 同步执行
+export function commitLayoutEffect(finishedWork, root) {
+  const current = finishedWork.alternate
+  // 根节点，老的，新的
+  commitLayoutEffectOnFiber(root, current, finishedWork)
+}
+function commitLayoutEffectOnFiber(finishedRoot, current, finishedWork) {
+  const flags = finishedWork.flags
+  switch (finishedWork.tag) {
+    case HostRoot: {
+      // 逐渐的遍历子节点
+      recursivelyTraverseLayoutEffects(finishedRoot, current, finishedWork)
+      break
+    }
+    case FunctionComponent: {
+      // 函数组件
+      recursivelyTraverseLayoutEffects(finishedRoot, current, finishedWork)
+      if (LayoutMask & flags) {//1024
+        // 执行副作用
+        // HookHasEffect 标识useEffect的执行的
+        commitHookLayoutEffect(finishedWork, HookLayout | HookHasEffect)
+      }
+      break
+    }
+    default:
+      break;
+  }
+
+}
+function recursivelyTraverseLayoutEffects(finishedRoot, current, parentFiber) {
+  if (parentFiber.subtreeFlags & LayoutMask) {
+    // 递归遍历子节点
+    let child = parentFiber.child
+    while (child !== null) {
+      commitLayoutEffectOnFiber(finishedRoot, current, child)
+      child = child.sibling
+    }
+  }
+}
+
+function commitHookLayoutEffect(finishedWork, hookFlags) {
+  commitHookEffectListMount(hookFlags, finishedWork)
+}
+
+
