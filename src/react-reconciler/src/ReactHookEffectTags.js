@@ -2,6 +2,7 @@ export const NoFlags = /*   */ 0b0000;
 
 // Represents whether effect should fire.
 // 有effect
+// 有这个flag才会执行effect！！！
 export const HasEffect = /* */ 0b0001;
 
 // Represents the phase in which the effect (not the clean-up) fires.

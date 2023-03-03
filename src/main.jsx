@@ -270,7 +270,7 @@ function Counter() {
   React.useEffect(() => {
     console.log("timer useEffect1");
     const timer = setInterval(() => {
-      setNumber((n) => n + 1);
+      // setNumber((n) => n + 1);
     }, 1000);
     return () => {
       clearInterval(timer);
