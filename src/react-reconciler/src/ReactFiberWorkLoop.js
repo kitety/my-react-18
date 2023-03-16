@@ -1,5 +1,5 @@
 // fiber工作循环
-import { scheduleCallback } from 'scheduler'
+import { NormalPriority as NormalSchedulePriority, scheduleCallback, shouldYield } from 'scheduler'
 import { createWorkInProgress } from './ReactFiber'
 import { beginWork } from './ReactFiberBeginWork'
 import { commitLayoutEffect, commitMutationEffectsOnFiber, commitPassiveMountEffects, commitPassiveUnmountEffects } from './ReactFiberCommitWork'
@@ -33,7 +33,7 @@ function ensureRootIsSchedule(root) {
   workInProgressRoot = root
   // 执行root上的并发更新工作
   // 告诉浏览器执行performConcurrentWorkOnRoot函数，参数为root
-  scheduleCallback(performConcurrentWorkOnRoot.bind(null, root))
+  scheduleCallback(NormalSchedulePriority, performConcurrentWorkOnRoot.bind(null, root))
 
 }
 /**
@@ -73,7 +73,7 @@ function commitRoot(root) {
       rootDoseHasPassiveEffect = true
       // 刷新副作用
       // 开启下一个宏任务，在绘制之后执行
-      scheduleCallback(flushPassiveEffect)
+      scheduleCallback(NormalSchedulePriority, flushPassiveEffect)
     }
 
   }
@@ -116,6 +116,12 @@ function renderRootSync(root) {
 }
 function workLoopSync() {
   while (workInProgress !== null) {
+    performUnitOfWork(workInProgress)
+  }
+}
+function workLoopConcurrent() {
+  // 有构建的fiber 并且时间片没过期
+  while (workInProgress !== null && !shouldYield()) {
     performUnitOfWork(workInProgress)
   }
 }
