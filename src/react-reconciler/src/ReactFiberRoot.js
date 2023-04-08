@@ -1,9 +1,12 @@
-import { createHostRootFiber } from './ReactFiber'
-import { initialUpdateQueue } from './ReactFiberClassUpdateQueue'
+import { createHostRootFiber } from './ReactFiber';
+import { initialUpdateQueue } from './ReactFiberClassUpdateQueue';
+import { NoLanes } from './ReactFiberLane';
 
 // 本质就是一个真实dom节点，稍微包装了
 function FiberRootNode(containerInfo) {
   this.containerInfo = containerInfo;// div#root
+  // 此根上有哪些赛道等待被处理
+  this.pendingLanes = NoLanes
 }
 // 创建fiber的根
 export function createFiberRoot(containerInfo) {

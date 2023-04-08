@@ -122,7 +122,8 @@ function workLoop(startTime) {
       currentTask.callback = null
       // 执行工作
       // 返回：null | 返回继续执行的回调（当前工作没完成）
-      const continuationCallback = callback()
+      const didUserCallbackTimeout = currentTask.expirationTime <= currentTime
+      const continuationCallback = callback(didUserCallbackTimeout)
       if (typeof continuationCallback === 'function') {
         // 返回一个需要继续执行的函数，表示还没结束
         currentTask.callback = continuationCallback

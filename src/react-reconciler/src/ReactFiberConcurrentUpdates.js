@@ -1,9 +1,16 @@
-import { HostRoot } from './ReactWorkTags'
+import { HostRoot } from './ReactWorkTags';
 //  更新队列缓存
-const concurrentQueue = [];
+const concurrentQueues = [];
 // 并发队列索引
 let concurrentQueuesIndex = 0
 
+/**
+ * 把更新放在更新队列里面
+ * 根fiber的更新{payload:<h1/>}
+ *
+ * 函数组件的更新
+ * 函数组件fiber的memoizedState=hook链表头=updateQueue{action:更新函数state=>state+'A'}
+ */
 export function finishQueuingConcurrentUpdates() {
   // 缓存索引
   const endIndex = concurrentQueuesIndex
@@ -13,9 +20,10 @@ export function finishQueuingConcurrentUpdates() {
   // 拿到之前存的数据
   // 引用类型，这一次就拿到全部的数据
   while (i < endIndex) {
-    const fiber = concurrentQueue[i++] // 函数组件对应的fiber
-    const queue = concurrentQueue[i++] //要更新的hook对应的更新的队列
-    const update = concurrentQueue[i++] ///更新对象
+    const fiber = concurrentQueues[i++] // 函数组件对应的fiber
+    const queue = concurrentQueues[i++] //要更新的hook对应的更新的队列
+    const update = concurrentQueues[i++] ///更新对象
+    const lane = concurrentQueues[i++] ///lane
     if (queue !== null && update !== null) {
       // 拿到数据
       const pending = queue.pending
@@ -42,8 +50,8 @@ export function finishQueuingConcurrentUpdates() {
  * @param {*} queue 要更新的hook对应的更新的队列
  * @param {*} update 更新对象
  */
-export function enqueueConcurrentHookUpdate(fiber, queue, update) {
-  enqueueUpdate(fiber, queue, update)
+export function enqueueConcurrentHookUpdate(fiber, queue, update, lane) {
+  enqueueUpdate(fiber, queue, update, lane)
   // 从fiber找到根
   return getRootForUpdatedFiber(fiber)
 }
@@ -65,12 +73,13 @@ function getRootForUpdatedFiber(sourceFiber) {
  * @param {*} queue
  * @param {*} update
  */
-function enqueueUpdate(fiber, queue, update) {
+function enqueueUpdate(fiber, queue, update, lane) {
   // 012 setNumber1  345 setNumber2  678 setNumber3
   // 三个一组缓存
-  concurrentQueue[concurrentQueuesIndex++] = fiber// 函数组件对应的fiber
-  concurrentQueue[concurrentQueuesIndex++] = queue//要更新的hook对应的更新的队列
-  concurrentQueue[concurrentQueuesIndex++] = update//更新对象
+  concurrentQueues[concurrentQueuesIndex++] = fiber// 函数组件对应的fiber
+  concurrentQueues[concurrentQueuesIndex++] = queue//要更新的hook对应的更新的队列
+  concurrentQueues[concurrentQueuesIndex++] = update//更新对象
+  concurrentQueues[concurrentQueuesIndex++] = lane//lane
 
 }
 /*
@@ -92,5 +101,18 @@ export function markUpdateLaneFromFiberToRoot(sourceFiber) {
     return node.stateNode
   }
   return null
+}
+
+/**
+ * 并发，把更新入队
+ * @param {*} fiber 入队的fiber 根fiber
+ * @param {*} queue sharedQueue 待生效的队列
+ * @param {*} update 更新
+ * @param {*} lane 更新车道
+ */
+export function enqueueConcurrentClassUpdate(fiber, queue, update, lane) {
+  enqueueUpdate(fiber, queue, update, lane)
+  // 从fiber找到根
+  return getRootForUpdatedFiber(fiber)
 }
 

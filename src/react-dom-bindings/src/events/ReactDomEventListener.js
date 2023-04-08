@@ -1,3 +1,4 @@
+import { ContinuousEventPriority, DefaultEventPriority, DiscreteEventPriority } from "react-reconciler/src/ReactEventPriorities";
 import { getClosestInstanceFromNode } from "../client/ReactDomComponentTree";
 import { dispatchEventForPluginEventSystem } from "./DOMPluginsEventSystem";
 import { getEventTarget } from "./getEventTarget";
@@ -35,4 +36,19 @@ export function dispatchEvent(domEventName, eventSystemFlags, container, nativeE
   const targetInst = getClosestInstanceFromNode(nativeEventTarget)
   // 为了插件系统派发事件
   dispatchEventForPluginEventSystem(domEventName, eventSystemFlags, nativeEvent, targetInst, container)
+}
+
+/**
+ * 获取事件优先级
+ * @param {*} donEventName 事件名称 click
+ */
+export function getEventPriority(domEventName) {
+  switch (domEventName) {
+    case 'click':
+      return DiscreteEventPriority
+    case 'drag':
+      return ContinuousEventPriority
+    default:
+      return DefaultEventPriority
+  }
 }

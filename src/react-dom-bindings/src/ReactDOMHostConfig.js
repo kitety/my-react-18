@@ -1,5 +1,8 @@
-import { preCacheFiberNode, updateFiberProps } from "./client/ReactDomComponentTree";
+import { DefaultEventPriority } from "react-reconciler/src/ReactEventPriorities";
 import { diffProperties, setInitialProperties, updateProperties } from "./ReactDOMComponent";
+import { preCacheFiberNode, updateFiberProps } from "./client/ReactDomComponentTree";
+import { getEventPriority } from "./events/ReactDomEventListener";
+
 
 // dom 操作
 export function shouldSetTextContent(type, props) {
@@ -83,4 +86,14 @@ export function commitUpdate(domElement, updatePayload, type, oldProps, newProps
 
 export function removeChild(hostParent, deleteDom) {
   hostParent.removeChild(deleteDom)
+}
+
+// 获取当前事件的优先级
+export function getCurrentEventPriority() {
+  const currentEvent = window.event
+  if (currentEvent === undefined) {
+    return DefaultEventPriority
+  }
+  return getEventPriority(currentEvent.type)
+
 }

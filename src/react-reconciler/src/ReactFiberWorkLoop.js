@@ -1,12 +1,17 @@
 // fiber工作循环
+import { getCurrentEventPriority } from 'react-dom-bindings/src/ReactDOMHostConfig'
 import { NormalPriority as NormalSchedulePriority, scheduleCallback, shouldYield } from 'scheduler'
+import { DiscreteEventPriority, getCurrentUpdatePriority, lanesToEventPriority } from './ReactEventPriorities'
 import { createWorkInProgress } from './ReactFiber'
 import { beginWork } from './ReactFiberBeginWork'
 import { commitLayoutEffect, commitMutationEffectsOnFiber, commitPassiveMountEffects, commitPassiveUnmountEffects } from './ReactFiberCommitWork'
 import { completeWork } from './ReactFiberCompleteWork'
 import { finishQueuingConcurrentUpdates } from './ReactFiberConcurrentUpdates'
 import { ChildDeletion, MutationMask, NoFlags, Passive, Placement, Update } from './ReactFiberFlags'
+import { NoLanes, SyncLane, getHighestPriorityLane, getNextLanes, markRootUpdated } from './ReactFiberLane'
 import { FunctionComponent, HostComponent, HostRoot, HostText } from './ReactWorkTags'
+
+
 // 正在进行的工作
 let workInProgress = null
 let workInProgressRoot = null
@@ -14,19 +19,52 @@ let workInProgressRoot = null
 let rootDoseHasPassiveEffect = false
 let rootWithPendingPassiveEffects = null// 具有useEffect类型的副作用的根节点 fiberRootNode
 
+
+
 /**
  * 计划更新root
  * 源码中此处有一个人独调度的功能
  * @param {*} root
  * @returns
  */
-export function scheduleUpdateOnFiber(root) {
+export function scheduleUpdateOnFiber(root, fiber, lane) {
+  markRootUpdated(root, lane)
   // 确保调度执行root上的更新
   ensureRootIsSchedule(root)
 }
 // 保证调度root的更新
 // 宏任务，不会立刻执行
 function ensureRootIsSchedule(root) {
+  // 获取当前优先级最高的车道
+  const nextLanes = getNextLanes(root, NoLanes)// 16
+  // 获取新的优先级
+  let newCallbackPriority = getHighestPriorityLane(nextLanes)
+  if (newCallbackPriority === SyncLane) {
+    // 同步
+
+  } else {
+    // 不是同步 调度新的任务
+    let schedularPriorityLevel;
+    switch (lanesToEventPriority(nextLanes)) {
+      case DiscreteEventPriority:
+        schedulerPriorityLevel = ImmediateSchedulerPriority;
+        break;
+      case ContinuousEventPriority:
+        schedulerPriorityLevel = UserBlockingSchedulerPriority;
+        break;
+      case DefaultEventPriority:
+        schedulerPriorityLevel = NormalSchedulerPriority;
+        break;
+      case IdleEventPriority:
+        schedulerPriorityLevel = IdleSchedulerPriority;
+        break;
+      default:
+        schedulerPriorityLevel = NormalSchedulerPriority;
+        break;
+    }
+
+
+  }
   if (workInProgressRoot) {
     return
   }
@@ -40,7 +78,7 @@ function ensureRootIsSchedule(root) {
  * 根据虚拟dom，构建fiber树，创建真实dom节点，再插入容器
  * @param {*} root
  */
-function performConcurrentWorkOnRoot(root) {
+function performConcurrentWorkOnRoot(root, didUserCallbackTimeout) {
   // 用同步的方式渲染根节点，初次（第一次）渲染的时候，都是同步的
   renderRootSync(root)
   // 开始提交，就是执行副作用，修改真实dom
@@ -221,4 +259,15 @@ function getTag(tag) {
     default:
       break
   }
+}
+// 请求更新车道
+export function requestUpdateLane() {
+  // 更新车道
+  const updateLane = getCurrentUpdatePriority()
+  if (updateLane !== NoLanes) {
+    return updateLane
+  }
+  // 事件优先级
+  const eventLanes = getCurrentEventPriority()
+  return eventLanes
 }

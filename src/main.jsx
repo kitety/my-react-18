@@ -299,7 +299,7 @@ function Counter() {
     </div>
   );
 }
-let element = <Counter />;
+let element = <h1>hello</h1>;
 // old let element = /*#__PURE__*/React.createElement(FunctionComponent, null);
 // new let element = /*#__PURE__*/(0, _jsxRuntime.jsx)(FunctionComponent, {});
 console.log("element: ", element);
