@@ -4,6 +4,7 @@ function ReactDOMRoot(internalRoot) {
   this._internalRoot = internalRoot
 }
 ReactDOMRoot.prototype.render = function (children) {
+  // debugger
   const root = this._internalRoot;
   // 消除多个 清空一遍
   root.containerInfo.innerHTML = ''

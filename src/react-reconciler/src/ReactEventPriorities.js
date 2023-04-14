@@ -34,7 +34,14 @@ export function isHigherEventPriority(
 }
 
 
-
+/**
+ * lane 转换为事件优先级
+ * lane 31个
+ * 事件优先级 4个
+ * 调度优先级 5个
+ * @param {*} lanes
+ * @returns
+ */
 export function lanesToEventPriority(lanes) {
   // 最高优先级的lane
   const lane = getHighestPriorityLane(lanes);

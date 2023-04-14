@@ -1,5 +1,5 @@
 import { IdlePriority, ImmediatePriority, LowPriority, NormalPriority, UserBlockingPriority } from "../SchedulerPriorities";
-import { push, peak, pop } from "./SchedulerMinHeap";
+import { peak, pop, push } from "./SchedulerMinHeap";
 
 // 任务id计数器
 let taskIdCounter = 1;
@@ -42,7 +42,7 @@ var IDLE_PRIORITY_TIMEOUT = maxSigned31BitInt;
  * @param {*} callback 回调
  * 优先级高的任务会优先执行，但是有超时时间
  */
-export function scheduleCallback(priorityLevel, callback) {
+function scheduleCallback(priorityLevel, callback) {
   const currentTime = getCurrentTime()
   // 此任务的开始时间
   const startTime = currentTime
@@ -186,6 +186,12 @@ function performWorkUntilDeadline() {
 }
 
 export {
+  scheduleCallback as unstable_scheduleCallback,
   shouldYieldToHost as shouldYield,
-  IdlePriority, ImmediatePriority, LowPriority, NormalPriority, UserBlockingPriority
-}
+  IdlePriority as unstable_IdlePriority,
+  ImmediatePriority as unstable_ImmediatePriority,
+  LowPriority as unstable_LowPriority,
+  NormalPriority as unstable_NormalPriority,
+  UserBlockingPriority as unstable_UserBlockingPriority,
+};
+

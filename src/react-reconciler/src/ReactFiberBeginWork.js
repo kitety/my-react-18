@@ -1,7 +1,7 @@
 import { shouldSetTextContent } from "react-dom-bindings/src/ReactDOMHostConfig";
 import logger, { indent } from "shared/logger";
 import { mountChildFibers, reconcileChildFibers } from "./ReactChildFiber";
-import { processUpdateQueue } from "./ReactFiberClassUpdateQueue";
+import { cloneUpdateQueue, processUpdateQueue } from "./ReactFiberClassUpdateQueue";
 import { renderWithHooks } from "./ReactFiberHooks";
 import { FunctionComponent, HostComponent, HostRoot, HostText, IndeterminateComponent } from "./ReactWorkTags";
 /**
@@ -26,10 +26,13 @@ function reconcileChildren(current, workInProgress, nextChildren) {
 }
 
 // 根节点
-function updateHostRoot(current, workInProgress) {
+function updateHostRoot(current, workInProgress, renderLanes) {
+  const nextProps = workInProgress.pendingProps;
+  // 更新队列克隆一份
+  cloneUpdateQueue(current, workInProgress)
   // 需要知道他的子虚拟dom，知道他的儿子的虚拟dom信息
   // 处理更新队列
-  processUpdateQueue(workInProgress)// 给workInProgress.memoriedState={element}赋值，从更新队列里面拿出来
+  processUpdateQueue(workInProgress, nextProps, renderLanes)// 给workInProgress.memoriedState={element}赋值，从更新队列里面拿出来
   const nextState = workInProgress.memoizedState
   // 虚拟dom {element: {…}}
   // 新的子虚拟dom
@@ -62,7 +65,6 @@ function updateHostComponent(current, workInProgress) {
   //根据新的虚拟dom，生成子fiber链表
   reconcileChildren(current, workInProgress, nextChildren)
   return workInProgress.child// {type：'h1',tag:5} 根据element创建一个fiber，赋值给child
-  return null
 }
 /**
  *
@@ -96,7 +98,7 @@ export function updateFunctionComponent(current, workInProgress, Component, next
  * @param {*} workInProgress 新fiber
  * @returns
  */
-export function beginWork(current, workInProgress) {
+export function beginWork(current, workInProgress, renderLanes) {
   logger(' '.repeat(indent.number) + 'beginWork', workInProgress)
   indent.number += 2
 
@@ -104,20 +106,20 @@ export function beginWork(current, workInProgress) {
   switch (workInProgress.tag) {
     // 函数式和class React中有这两种组件，其实本质都是函数
     case IndeterminateComponent:
-      return mountIndeterminateComponent(current, workInProgress, workInProgress.type)
+      return mountIndeterminateComponent(current, workInProgress, workInProgress.type, renderLanes)
     // 函数组件
     case FunctionComponent:
       {
         const Component = workInProgress.type
         const nextProps = workInProgress.pendingProps
-        return updateFunctionComponent(current, workInProgress, Component, nextProps)
+        return updateFunctionComponent(current, workInProgress, Component, nextProps, renderLanes)
       }
     // 根节点
     case HostRoot:
       // 更新子fiber树
-      return updateHostRoot(current, workInProgress)
+      return updateHostRoot(current, workInProgress, renderLanes)
     case HostComponent:
-      return updateHostComponent(current, workInProgress)
+      return updateHostComponent(current, workInProgress, renderLanes)
     case HostText:
       // 文本节点没有子节点
       return null
@@ -125,5 +127,4 @@ export function beginWork(current, workInProgress) {
     default:
       return null;
   }
-  return null
 }
